@@ -4,6 +4,8 @@ from build123d import *
 from ocp_vscode import *
 from typing import Tuple, Optional, Any, Self, Type, Union
 
+import sys
+
 class BuildPoly(BuildLine):
     # Class variable with Optional type
     _current_manager: Optional[BuildPoly] = None
@@ -130,7 +132,11 @@ def right(distance: float) -> Line:
     x,y = manager.current_point   
     return line((x + distance, y))
 
+
+
 def main() -> None:
+    current_module = sys.modules[__name__]
+    
     # Demonstration of direction functions
     with BuildPoly(start_point=(5.0, 5.0), close=False) as poly:
         right(20.0)
@@ -139,8 +145,11 @@ def main() -> None:
         down(10.0)
 
     face = make_face(poly.wires())
+    #print(face.show_topology())
     part = extrude(face, amount=10)    
     show_all(reset_camera=Camera.KEEP)
 
 if __name__ == "__main__":
     main()
+    from polyfuncs import down_left
+    down_left(down=20, left=30)
