@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from build123d import *
 from ocp_vscode import *
-from typing import Tuple, Optional, Any, Self, Type
+from typing import Tuple, Optional, Any, Self, Type, Union
 
 class BuildPoly(BuildLine):
     # Class variable with Optional type
@@ -74,10 +74,69 @@ def line(end_point: Tuple[float, float]) -> Line:
     """
     return BuildPoly._get_manager().lineto(end_point)
 
+def up(distance: float) -> Line:
+    """
+    Move up (along positive Y-axis) by the specified distance
+    
+    Args:
+        distance: Distance to move up
+    
+    Returns:
+        The created Line object
+    """
+    manager = BuildPoly._get_manager()
+    x,y = manager.current_point
+    return line((x, y + distance))
+
+def down(distance: float) -> Line:
+    """
+    Move down (along negative Y-axis) by the specified distance
+    
+    Args:
+        distance: Distance to move down
+    
+    Returns:
+        The created Line object
+    """
+    manager = BuildPoly._get_manager()
+    x,y = manager.current_point    
+    return line((x, y - distance))
+
+def left(distance: float) -> Line:
+    """
+    Move left (along negative X-axis) by the specified distance
+    
+    Args:
+        distance: Distance to move left
+    
+    Returns:
+        The created Line object
+    """
+    manager = BuildPoly._get_manager()
+    x,y = manager.current_point   
+    return line((x - distance, y))
+
+def right(distance: float) -> Line:
+    """
+    Move right (along positive X-axis) by the specified distance
+    
+    Args:
+        distance: Distance to move right
+    
+    Returns:
+        The created Line object
+    """
+    manager = BuildPoly._get_manager()
+    x,y = manager.current_point   
+    return line((x + distance, y))
+
 def main() -> None:
-    # Demonstration of point input
+    # Demonstration of direction functions
     with BuildPoly(start_point=(5.0, 5.0), close=False) as poly:
-        line(end_point=(25.0, 5.0))
+        right(20.0)
+        up(10.0)
+        left(20.0)
+        down(10.0)
     
     show(poly, reset_camera=Camera.KEEP)
 
