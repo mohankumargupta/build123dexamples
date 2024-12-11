@@ -137,8 +137,10 @@ def main() -> None:
         up(10.0)
         left(20.0)
         down(10.0)
-    
-    show(poly, reset_camera=Camera.KEEP)
+
+    face = make_face(poly.wires())
+    part = extrude(face, amount=10)    
+    show_all(reset_camera=Camera.KEEP)
 
 if __name__ == "__main__":
     main()
