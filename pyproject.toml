@@ -12,7 +12,9 @@ dependencies = [
    "ipykernel",
    "jupyter-console",
    "ocp-tessellate",
-   "ocp-vscode"
+   "ocp-vscode",
+   "notebook",
+   "jupyter_cadquery",
 ]
 
 [tool.setuptools]
