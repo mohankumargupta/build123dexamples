@@ -11,12 +11,30 @@
         var fullScreenRenderer = vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance();
         var actor = vtk.Rendering.Core.vtkActor.newInstance();
         var actor2 = vtk.Rendering.Core.vtkActor.newInstance();
+        var actor3 = vtk.Rendering.Core.vtkActor.newInstance();
+        var actor4 = vtk.Rendering.Core.vtkActor.newInstance();
         var mapper = vtk.Rendering.Core.vtkMapper.newInstance();
         var mapper2 = vtk.Rendering.Core.vtkMapper.newInstance();
+        var mapper3 = vtk.Rendering.Core.vtkMapper.newInstance();
+        var mapper4 = vtk.Rendering.Core.vtkMapper.newInstance();
         var cone = vtk.Filters.Sources.vtkConeSource.newInstance();
-        var cylinder = vtk.Filters.Sources.vtkCylinderSource.newInstance({
-            height: 30, radius: 0.05, resolution: 80,
+        var xaxis = vtk.Filters.Sources.vtkCylinderSource.newInstance({
+            height: 30, radius: 0.05, resolution: 80
         });
+        xaxis.setDirection(1, 0, 0);
+        var yaxis = vtk.Filters.Sources.vtkCylinderSource.newInstance({
+            height: 30, radius: 0.05, resolution: 80
+        });
+        //yaxis.setDirection(0, 1, 0);
+        var zaxis = vtk.Filters.Sources.vtkCylinderSource.newInstance({
+            height: 30, radius: 0.05, resolution: 80
+        });
+        zaxis.setDirection(0, 0, 1);
+
+        //cylinder.setDirection(0, 1, 0);
+        //cylinder.setDirection(0, 0, 1);
+
+
         // var cylinder = vtk.Filters.Sources.vtkCylinderSource.newInstance({
         //     height: 200, radius: 2, resolution: 80
         // });
@@ -30,13 +48,28 @@
         mapper.setInputConnection(cone.getOutputPort());
 
         actor2.setMapper(mapper2);
-        mapper2.setInputConnection(cylinder.getOutputPort());
+        mapper2.setInputConnection(xaxis.getOutputPort());
         actor2.setPosition(0, 0, 0);
         actor2.getProperty().setColor(1.0, 0.0, 0.0);
+
+        actor3.setMapper(mapper3);
+        mapper3.setInputConnection(yaxis.getOutputPort());
+        actor3.setPosition(0, 0, 0);
+        actor3.getProperty().setColor(0.0, 1.0, 0.0);
+
+        actor4.setMapper(mapper4);
+        mapper4.setInputConnection(zaxis.getOutputPort());
+        actor4.setPosition(0, 0, 0);
+        actor4.getProperty().setColor(0.0, 0.0, 1.0);
+
+        //transform.rotateX(90);
+        //actor2.setUserMatrix(transform.getMatrix());
 
         var renderer = fullScreenRenderer.getRenderer();
         renderer.addActor(actor);
         renderer.addActor(actor2);
+        renderer.addActor(actor3);
+        renderer.addActor(actor4);
         renderer.resetCamera();
 
         var renderWindow = fullScreenRenderer.getRenderWindow();
