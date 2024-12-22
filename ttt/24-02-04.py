@@ -21,6 +21,15 @@ with BuildPart() as part:
         with Locations((HALF_LENGTH,0)):
             s3 = add(s2, mode=Mode.SUBTRACT)
     extrude(amount=-HEIGHT)
+    # lip
+    with BuildSketch() as lip:
+        LIP_OFFSET = 5
+        s4 = offset(s2, amount=LIP_OFFSET, mode=Mode.PRIVATE)
+        with Locations((HALF_LENGTH,0)):
+            add(s4)
+            add(s2, mode=Mode.SUBTRACT)    
+    extrude(amount=3)
+    
 
 show_all(axes=True, axes0=True, transparent=True)
 #show(part, reset_camera=Camera.KEEP)
