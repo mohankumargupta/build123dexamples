@@ -11,8 +11,6 @@ SLOT_INNER_WIDTH = 15
 HALF_LENGTH = LENGTH / 2
 HALF_WIDTH = WIDTH / 2
 
-
-
 with BuildPart() as part:
     # base body
     with BuildSketch() as base_sketch:
@@ -30,18 +28,18 @@ with BuildPart() as part:
         with Locations((HALF_LENGTH, 0)):
             add(half_slot_sketch)
     extrude(amount=5)
-    mirror(about=Plane.YZ)
-
-    # lip hole
-    with BuildSketch() as lip_hole:
+    
+    # slot hole
+    with BuildSketch() as slot_hole:
         s4 = SlotCenterToCenter(center_separation=CENTER_TO_CENTER_DISTANCE, height=SLOT_INNER_WIDTH, mode=Mode.PRIVATE)
         s5 = split(s4, bisect_by=Plane.YZ, keep=Keep.BOTTOM, mode=Mode.PRIVATE)
         with Locations((HALF_LENGTH, 0)):
             add(s5)
     extrude(amount=-HEIGHT, mode=Mode.SUBTRACT)
-    #mirror(about=Plane.YZ)
-    #mirror(about=Plane.YZ, mode=Mode.SUBTRACT)
-    #extrude(mirror(about=Plane.YZ, mode=Mode.SUBTRACT))
+    
+    #mirror lip extrude and slot hole
+    split(bisect_by=Plane.YZ, keep=Keep.TOP)
+    mirror(about=Plane.YZ)
     
        
 #show_all(axes=True, axes0=True, transparent=True)
