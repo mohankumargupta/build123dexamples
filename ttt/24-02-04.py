@@ -24,8 +24,8 @@ with BuildPart() as part:
     # lip
     with BuildSketch() as lip:
         LIP_OFFSET = 5
-        s4 = offset(s2, amount=LIP_OFFSET, mode=Mode.PRIVATE)
-        with Locations((HALF_LENGTH,0)):
+        s4 = offset(s2, amount=LIP_OFFSET, mode=Mode.PRIVATE, kind=Kind.TANGENT)
+        with Locations((HALF_LENGTH - LIP_OFFSET,0)):
             add(s4)
             add(s2, mode=Mode.SUBTRACT)    
     extrude(amount=3)
