@@ -11,9 +11,13 @@ DENSITY = 7800 / 1e6
 LENGTH = 165
 WIDTH = 85
 HEIGHT = 25
+
 BASE_HEIGHT = 12
 SLOT_INNER_WIDTH = 15
 LIP_OFFSET = 5
+SLOT_OUTER_WIDTH = SLOT_INNER_WIDTH+2*LIP_OFFSET
+LIP_HEIGHT = 3
+
 RAMP_LENGTH = 90
 RAMP_WIDTH = 65
 RAMP_HEIGHT = HEIGHT - BASE_HEIGHT
@@ -35,13 +39,13 @@ with BuildPart() as base_part:
     with BuildSketch(mode=Mode.PRIVATE) as half_slot_sketch:
         CENTER_TO_CENTER_DISTANCE = LENGTH - 108
         
-        s1 = SlotCenterToCenter(center_separation=CENTER_TO_CENTER_DISTANCE, height=SLOT_INNER_WIDTH+2*LIP_OFFSET)
+        s1 = SlotCenterToCenter(center_separation=CENTER_TO_CENTER_DISTANCE, height=SLOT_OUTER_WIDTH)
         s2 = offset(amount=-LIP_OFFSET, mode=Mode.SUBTRACT)
         s3 = split(bisect_by=Plane.YZ, keep=Keep.BOTTOM)
     with BuildSketch() as lip_sketch:
         with Locations((HALF_LENGTH, 0)):
             add(half_slot_sketch)
-    extrude(amount=5)
+    extrude(amount=LIP_HEIGHT)
     
     # slot hole
     with BuildSketch() as slot_hole:
