@@ -1,4 +1,4 @@
 {
-    "OcpCadViewer.advanced.autohideTerminal": true,
+    "OcpCadViewer.advanced.autohideTerminal": false,
     "editor.minimap.enabled": false
 }
