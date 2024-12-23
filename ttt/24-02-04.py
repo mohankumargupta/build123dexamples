@@ -54,14 +54,17 @@ with BuildPart() as part2:
         RAMP_RADIUS = 50
         ARC_OFFSET = 5
         with BuildLine() as ramp_profile:
-            ramp_l1 = Line((-HALF_RAMP_WIDTH, -HALF_RAMP_HEIGHT), (HALF_RAMP_WIDTH, -HALF_RAMP_HEIGHT))
+            ramp_l1 = Line((-HALF_RAMP_WIDTH, 0), (HALF_RAMP_WIDTH, 0))
             ramp_l2 = Line(ramp_l1@1, ramp_l1@1 + (0, RAMP_HEIGHT))
             ramp_l3 = Line(ramp_l2@1, ramp_l2@1 + (-ARC_OFFSET, 0))
             ramp_l4 = Line(ramp_l1@0, ramp_l1@0 + (0, RAMP_HEIGHT))
             ramp_l5 = Line(ramp_l4@1, ramp_l4@1 + (ARC_OFFSET, 0))
             ramp_l6 = RadiusArc(ramp_l5@1, ramp_l3@1, radius=-RAMP_RADIUS)
-        make_face()
+        make_face()        
     extrude(amount=HALF_RAMP_LENGTH, both=True)
+    with Locations(Plane.XZ.shift_origin((-55/2, 0,6)), Plane.XZ.shift_origin((55/2, 0,6))):
+        HOLE_RADIUS = 5 / 2
+        Hole(radius=HOLE_RADIUS)
        
 #show_all(axes=True, axes0=True, transparent=True)
 show_all(axes=True, axes0=True, transparent=False, reset_camera=Camera.KEEP)
