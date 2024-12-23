@@ -62,13 +62,14 @@ with BuildPart() as base_part:
 with BuildPart() as ramp_part:
     with BuildSketch(Plane.XZ) as ramp_sketch:
         RAMP_RADIUS = 50
-        ARC_OFFSET = 5
+        #ARC_OFFSET = 5
+        ARC_ENDPOINT = 28.61817604250837
         with BuildLine() as ramp_profile:
             ramp_l1 = Line((-HALF_RAMP_WIDTH, 0), (HALF_RAMP_WIDTH, 0))
             ramp_l2 = Line(ramp_l1@1, ramp_l1@1 + (0, RAMP_HEIGHT))
-            ramp_l3 = Line(ramp_l2@1, ramp_l2@1 + (-ARC_OFFSET, 0))
+            ramp_l3 = Line(ramp_l2@1, (ARC_ENDPOINT, (ramp_l2@1).Y))
             ramp_l4 = Line(ramp_l1@0, ramp_l1@0 + (0, RAMP_HEIGHT))
-            ramp_l5 = Line(ramp_l4@1, ramp_l4@1 + (ARC_OFFSET, 0))
+            ramp_l5 = Line(ramp_l4@1, (-ARC_ENDPOINT, (ramp_l4@1).Y))
             ramp_l6 = RadiusArc(ramp_l5@1, ramp_l3@1, radius=-RAMP_RADIUS)
         make_face()        
     extrude(amount=HALF_RAMP_LENGTH, both=True)
