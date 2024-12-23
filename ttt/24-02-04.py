@@ -1,6 +1,12 @@
 from build123d import *
 from ocp_vscode import show, show_all, Camera
 
+# DENSA = 7800 / 1e6  # carbon steel density g/mm^3
+# DENSB = 2700 / 1e6  # aluminum alloy
+# DENSC = 1020 / 1e6  # ABS
+
+DENSITY = 7800 / 1e6
+
 # Parameters
 LENGTH = 165
 WIDTH = 85
@@ -19,7 +25,7 @@ HALF_RAMP_LENGTH = RAMP_LENGTH / 2
 HALF_RAMP_WIDTH = RAMP_WIDTH / 2
 HALF_RAMP_HEIGHT = RAMP_HEIGHT / 2
 
-with BuildPart() as part:
+with BuildPart() as base_part:
     # base body
     with BuildSketch() as base_sketch:
         RectangleRounded(LENGTH, WIDTH, radius=10)
@@ -49,7 +55,7 @@ with BuildPart() as part:
     split(bisect_by=Plane.YZ, keep=Keep.TOP)
     mirror(about=Plane.YZ)
 
-with BuildPart() as part2:
+with BuildPart() as ramp_part:
     with BuildSketch(Plane.XZ) as ramp_sketch:
         RAMP_RADIUS = 50
         ARC_OFFSET = 5
@@ -62,10 +68,14 @@ with BuildPart() as part2:
             ramp_l6 = RadiusArc(ramp_l5@1, ramp_l3@1, radius=-RAMP_RADIUS)
         make_face()        
     extrude(amount=HALF_RAMP_LENGTH, both=True)
-    with Locations(Plane.XZ.shift_origin((-55/2, 0,6)), Plane.XZ.shift_origin((55/2, 0,6))):
+    with Locations(Plane.XZ.shift_origin((-55/2,0,6)), Plane.XZ.shift_origin((55/2,0,6))):
         HOLE_RADIUS = 5 / 2
         Hole(radius=HOLE_RADIUS)
-       
+
+with BuildPart() as final_part:
+    add(base_part)
+    add(ramp_part)
+  
 #show_all(axes=True, axes0=True, transparent=True)
 show_all(axes=True, axes0=True, transparent=False, reset_camera=Camera.KEEP)
-        
+print(f"\npart mass = {final_part.part.volume*DENSITY:0.2f}")        
