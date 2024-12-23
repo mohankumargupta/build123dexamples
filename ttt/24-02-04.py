@@ -57,7 +57,12 @@ with BuildPart() as base_part:
     
     #mirror lip extrude and slot hole
     split(bisect_by=Plane.YZ, keep=Keep.TOP)
+    # Add fillets around lip
+    bottom_lip = base_part.faces().group_by(Axis.Z)[-3].edges().filter_by_position(Axis.Y, -20, 20)
+    fillet(bottom_lip, radius=2)
     mirror(about=Plane.YZ)
+
+
 
 with BuildPart() as ramp_part:
     with BuildSketch(Plane.XZ) as ramp_sketch:
@@ -81,6 +86,7 @@ with BuildPart() as final_part:
     add(base_part)
     add(ramp_part)
   
+
 #show_all(axes=True, axes0=True, transparent=True)
-show_all(axes=True, axes0=True, transparent=False, reset_camera=Camera.KEEP)
+show_all(axes=True, axes0=True, reset_camera=Camera.KEEP)
 print(f"\npart mass = {final_part.part.volume*DENSITY:0.2f}")        
