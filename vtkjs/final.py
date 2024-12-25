@@ -10,13 +10,19 @@ html_content = """
 <script>
 function changeContent() {{
     document.getElementById("myContainer_{seconds_since_epoch}").innerHTML = "{newContent}";
+    print(vtk)
 }}
-setTimeout(changeContent, 0);
 
+
+setTimeout(()=>{{
+  changeContent();
+}}, 0);
+
+console.log("does work");
 
 </script>
 """
 
-html = html_content.format(seconds_since_epoch=seconds_since_epoch, newContent="f")
+html = html_content.format(seconds_since_epoch=seconds_since_epoch, newContent="Some stuff2")
 display(HTML(html))
 #%%

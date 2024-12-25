@@ -9,7 +9,7 @@ html_content = """
 <body>
 
 <div id="container"></div>
-<div>boo</div>
+
 
 
 <script>
@@ -84,23 +84,14 @@ html_content = """
     // Initial size update
     //updateSize();
     }
-    document.querySelector('container').innerHTML = "gdgg"
-    //render();
+    //document.querySelector('container').innerHTML = "gdgg"
+    setTimeout(render, 0);
 
 </script>
 </body>
 </html>
 """
 
-html2_content = """
-<div id="container" style="width: 800px; height: 600px; margin: 0; overflow: hidden; border: 1px solid #ccc;"></div>
-
-<script src="https://unpkg.com/vtk.js@32.8.1/vtk.js"></script>
-<script>
-
-</script>
-
-"""
 
 # Display the HTML content in the notebook
 display(HTML(html_content))
