@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTK.js Hello World</title>
+    <script src="https://unpkg.com/vtk.js@32.8.1/vtk.js"></script>
+    <style>
+        #container {
+            width: 800px;
+            height: 100%;
+            /* Adjust as needed */
+            margin: 0;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+
+    <script>
+        // Import VTK.js classes
+        const vtk = window.vtk;
+
+        // Create a render window and renderer
+        const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
+        const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
+        renderWindow.addRenderer(renderer);
+
+        // Create a render window interactor
+        //const renderWindowInteractor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
+        //renderWindowInteractor.setView(renderWindow);
+
+        // Create an OpenGL render window
+        const openGLRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
+        renderWindow.addView(openGLRenderWindow);
+
+        // Link OpenGL render window to DOM element
+        const container = document.getElementById('container');
+        openGLRenderWindow.setContainer(container);
+
+        // Adjust interactor to listen to events in the container
+        //renderWindowInteractor.initialize();
+        //renderWindowInteractor.bindEvents(container);
+
+        // Create a cube source
+        const cubeSource = vtk.Filters.Sources.vtkCubeSource.newInstance();
+
+        // Create a mapper
+        const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
+        mapper.setInputConnection(cubeSource.getOutputPort());
+
+        // Create an actor
+        const actor = vtk.Rendering.Core.vtkActor.newInstance();
+        actor.setMapper(mapper);
+
+        // Add actor to the renderer
+        renderer.addActor(actor);
+
+        // Set renderer background color
+        renderer.setBackground(0.0, 1.0, 0.1); // Dark gray background
+
+
+
+
+        const camera = renderer.getActiveCamera();
+        camera.setPosition(0, 0, 10);
+        camera.setFocalPoint(0, 0, 0);
+
+        // Perform camera rotations
+        camera.elevation(35);  // Rotate up/down by 35 degrees
+        camera.roll(35);      // Roll by 35 degrees
+
+        // Set to orthographic projection
+        camera.setParallelProjection(true);
+
+        // Set the view up direction to be orthogonal
+        camera.orthogonalizeViewUp();
+
+        // Adjust the parallel scale for better view
+        camera.setParallelScale(1.5);
+        // camera.setParallelProjection(true); // Enable orthographic projection
+        // camera.setPosition(0, 0, 10); // Position the camera further away in Z
+        // camera.setFocalPoint(0, 0, 0); // Focus on the cube center
+        // camera.setParallelScale(1.5); // Adjust the orthographic scaling for better view
+        // // Adjust the camera
+        renderer.resetCamera();
+
+        // // Enable interaction to allow rotation
+        // renderWindowInteractor.setInteractorStyle(
+        //     vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance()
+        // );
+
+        // Render the scene
+        renderWindow.render();
+    </script>
+</body>
+
+</html>

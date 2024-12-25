@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTK.js Hello World</title>
+    <script src="https://unpkg.com/vtk.js@32.8.1/vtk.js"></script>
+    <style>
+        #container {
+            width: 800px;
+            height: 600px;
+            margin: 0;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+
+    <script>
+        // Import VTK.js classes
+        const vtk = window.vtk;
+
+        // Create a render window and renderer
+        const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
+        const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
+        renderWindow.addRenderer(renderer);
+
+        // Create an OpenGL render window
+        const openGLRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
+        renderWindow.addView(openGLRenderWindow);
+
+        // Link OpenGL render window to DOM element
+        const container = document.getElementById('container');
+        openGLRenderWindow.setContainer(container);
+
+        // Create and initialize the interactor
+        const interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
+        interactor.setView(openGLRenderWindow);
+        interactor.initialize();
+        interactor.bindEvents(container);
+
+        // Set the interaction style
+        const interactorStyle = vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
+        interactor.setInteractorStyle(interactorStyle);
+
+        // Create a cube source
+        const cubeSource = vtk.Filters.Sources.vtkCubeSource.newInstance();
+
+        // Create a mapper
+        const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
+        mapper.setInputConnection(cubeSource.getOutputPort());
+
+        // Create an actor
+        const actor = vtk.Rendering.Core.vtkActor.newInstance();
+        actor.setMapper(mapper);
+
+        // Add actor to the renderer
+        renderer.addActor(actor);
+
+        // Set renderer background color
+        renderer.setBackground(0.0, 1.0, 0.1);
+
+        // Setup camera
+        const camera = renderer.getActiveCamera();
+        //camera.setParallelProjection(true);
+        //camera.setPosition(0, 0, 10);
+        //camera.setFocalPoint(0, 0, 0);
+        //camera.setParallelScale(1.5);
+
+        camera.elevation(35)
+        camera.roll(35)
+        camera.orthogonalizeViewUp()
+
+        // Reset camera and render
+        renderer.resetCamera();
+        renderWindow.render();
+
+        // Handle window resize
+        function updateSize() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            openGLRenderWindow.setSize(width, height);
+            renderWindow.render();
+        }
+
+        window.addEventListener('resize', updateSize);
+        updateSize();
+    </script>
+</body>
+
+</html>

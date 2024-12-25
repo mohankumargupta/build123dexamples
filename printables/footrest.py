@@ -94,6 +94,6 @@ with BuildPart() as footrest_builder:
     #add(text_builder)
 
 footrest = footrest_builder.part
-show(footrest, reset_camera=Camera.KEEP)
+show_all(reset_camera=Camera.KEEP)
 
 
