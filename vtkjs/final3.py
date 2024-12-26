@@ -30,6 +30,7 @@ function render() {{
         renderer.addActor(actor);
 
         // Set renderer background color
+        //renderer.setBackground(0.0, 1.0, 0.1);
         renderer.setBackground(0.0, 1.0, 0.1);
 
         // Setup camera
@@ -50,7 +51,7 @@ function render() {{
         const openglRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
         renderWindow.addView(openglRenderWindow);
         
-        container = document.querySelector("#container");
+        container = document.querySelector("#myContainer_{seconds_since_epoch}");
         openglRenderWindow.setContainer(container);
 
         console.log(container);
