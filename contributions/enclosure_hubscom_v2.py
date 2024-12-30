@@ -12,14 +12,14 @@ WIDTH = 50
 HEIGHT = 8
 
 # Computed Parameters
-
 HALF_WIDTH = WIDTH / 2
 
 with BuildPart() as part:
     with BuildSketch() as sketch1:
         r1=Rectangle(WIDTH, WIDTH)
         with Locations((0, HALF_WIDTH)):
-            r2=Trapezoid(width=50, height=20, left_side_angle=math.atan2(20,7.5)* (180 / math.pi), right_side_angle=math.atan2(20,7.5)* (180 / math.pi), align=(Align.CENTER, Align.MIN))
+            #r2=Trapezoid(width=50, height=20, left_side_angle=math.atan2(20,7.5)* (180 / math.pi), right_side_angle=math.atan2(20,7.5)* (180 / math.pi), align=(Align.CENTER, Align.MIN))
+            r2 = IsoscelesTrapezoid(35, 50, 20, align=(Align.CENTER, Align.MIN))
         center_y = 55
         with Locations((0, center_y)): 
             Rectangle(35,20)
