@@ -9,5 +9,12 @@ requires-python = ">=3.11"
 
 dependencies = ["build123d", "ocp-vscode", "notebook", "jupytext"]
 
+[project.optional-dependencies]
+lint = ["ruff"]
+
 [tool.setuptools]
 py-modules = []
+
+[tool.ruff.lint]
+select = ["UP015"]
+ignore = ["F403", "F405"]
