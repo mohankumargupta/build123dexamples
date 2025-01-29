@@ -26,11 +26,11 @@ half_width = width / 2
 
 # Main design
 with BuildPart() as part_builder:
-    Box(length, width, height, align=(Align.MAX, Align.MAX, Align.MAX))
+    Box(length, width, height, align=(Align.MIN, Align.MIN, Align.MAX))
     with BuildSketch() as quadrant_bottom_lower:
-        with Locations((-x_offset, -y_offset)):
+        with Locations((length - x_offset, y2_offset)):
             RegularPolygon(radius=hex_inscribed_radius, side_count=6, major_radius=False, rotation=90)
-    a=extrude(amount=-hex_depth, mode=Mode.SUBTRACT)            
+    extrude(amount=-hex_depth, mode=Mode.SUBTRACT)            
 
 part = part_builder.part
 show_all(reset_camera=Camera.KEEP)

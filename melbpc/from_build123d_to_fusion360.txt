@@ -1,0 +1,57 @@
+Convert build123d script to Fusion360 python script equivalent.
+
+Before we start, I want you to adhere to instructions below:
+
+1.  Declare the design variable like
+           design = adsk.fusion.Design.cast(product)
+also i want to declare user parameters.
+
+   2.  Use this function - declare it inside the run function after declaration of design variable above since it requires it. 
+        # Get parameter values
+        def userparameter_value(name):
+            return design.unitsManager.evaluateExpression(params.itemByName(name).expression, 'mm')
+            
+   
+
+    3.  If there is a user parameter eg. Called length=1260 then I want you keep that declaration and comments at the top of the file after the imports.
+
+    4. Instead of params.add(name, value, units, '') use
+            params.add(name, adsk.core.ValueInput.createByString( f”{value}{units}”), units, '')
+
+     5. For calculated parameters eg. Radius = diameter/2 use
+ params.add(name, adsk.core.ValueInput.createByString(“diameter/2”) , units, '')
+
+    6. polygons in fusion 360 python api sketch.sketchCurves.sketchLines.addScribedPolygon()
+    
+    
+    def addScribedPolygon(self, centerPoint: core.Base, edgeCount: int, angle: float, radius: float, isInscribed: bool) -> SketchLineList:
+        """
+        Creates either an inscribed or circumscribed n-sided polygon.
+        centerPoint : Either an existing SketchPoint or a Point3D object that defines the center point of the polygon. If a SketchPoint object
+        is provided the point will continue to control the center of the polygon.
+        edgeCount : The number of edges in the resulting polygon.
+        angle : Controls the rotation of the polygon around the center point. For a circumscribed polygon, this defines where the center
+        of one of the edges will be positioned. For an inscribed polygon, this defines where one of the corners of the polygon
+        will be positioned.
+        radius : The radius of the circle in centimeters that the polygon goes to, either outside (circumscribed) or inside (inscribed) the circle.
+        isInscribed : Specifies if a circumscribed or inscribed polygon should be created.
+        Returns a list of the sketch lines that were created to represent the polygon or null in the case of bad input.
+        """
+    
+    unfortunately polygons in fusion 360 are unconstrained. To constrain it, you need to draw a construction line from the center of the polygon vertically(make it approx twice the inscribed/circumscribed radius), then constrain a corner close to it to that construction line.
+    
+    7. 
+    
+    The ExtrudeFeatureInput type has method signatures as follows:
+       - def setOneSideExtent(self, extent: ExtentDefinition, direction: ExtentDirections, taperAngle: core.ValueInput = None) -> bool:
+       - def setTwoSidesExtent(self, sideOneExtent: ExtentDefinition, sideTwoExtent: ExtentDefinition, sideOneTaperAngle: core.ValueInput = None, sideTwoTaperAngle: core.ValueInput = None) -> bool:
+       - def setSymmetricExtent(self, distance: core.ValueInput, isFullLength: bool, taperAngle: core.ValueInput = None) -> bool:
+    
+    example usage:
+    distance = adsk.core.ValueInput.createByReal(userparameter_value('height'))
+   extInput.setOneSideExtent(adsk.fusion.DistanceExtentDefinition.create(distance),adsk.fusion.ExtentDirections.PositiveExtentDirection)
+
+    note the use of adsk.fusion.DistanceExtentDefinition.create static method
+
+Here is the build123d script.
+
