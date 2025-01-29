@@ -4,7 +4,8 @@ Before we start, I want you to adhere to instructions below:
 
 1.  Declare the design variable like
            design = adsk.fusion.Design.cast(product)
-also i want to declare user parameters.
+- also i want to declare user parameters.
+- use parameters to define sketch dimensions. want to see those dimensions as fx: on the sketches which indicates they are driven by parameters.
 
    2.  Use this function - declare it inside the run function after declaration of design variable above since it requires it. 
         # Get parameter values
@@ -20,6 +21,8 @@ also i want to declare user parameters.
 
      5. For calculated parameters eg. Radius = diameter/2 use
  params.add(name, adsk.core.ValueInput.createByString(“diameter/2”) , units, '')
+
+    I want sketches to use parameters rather than raw values.
 
     6. polygons in fusion 360 python api sketch.sketchCurves.sketchLines.addScribedPolygon()
     
