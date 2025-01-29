@@ -29,7 +29,7 @@ with BuildPart() as part_builder:
     Box(length, width, height, align=(Align.MAX, Align.MAX, Align.MAX))
     with BuildSketch() as quadrant_bottom_lower:
         with Locations((-x_offset, -y_offset)):
-            RegularPolygon(radius=hex_inscribed_radius, side_count=6, major_radius=False)
+            RegularPolygon(radius=hex_inscribed_radius, side_count=6, major_radius=False, rotation=90)
     a=extrude(amount=-hex_depth, mode=Mode.SUBTRACT)            
 
 part = part_builder.part
