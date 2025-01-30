@@ -57,5 +57,22 @@ Before we start, I want you to adhere to instructions below:
 
     note the use of adsk.fusion.DistanceExtentDefinition.create static method
 
+ 8. Here is how you might find the top face  
+
+         boxBody = extrudes.add(extInput).bodies.item(0)
+
+        # Get the top face of the box
+        topFace = None
+        for face in boxBody.faces:
+            if face.geometry.surfaceType == adsk.core.SurfaceTypes.PlaneSurfaceType:
+                normal = face.geometry.normal
+                if normal.z == 1:  # Top face has a normal pointing in the +Z direction
+                    topFace = face
+                    break
+
+        if not topFace:
+            ui.messageBox("Top face not found!")
+            return
+
 Here is the build123d script.
 
