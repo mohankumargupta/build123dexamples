@@ -89,7 +89,14 @@ def top_face(body: adsk.fusion.BRepBody) -> adsk.fusion.BRepFace:
 
 
     10. prefer to use addTwoPointRectangle over addCenterPointRectangle
+    11. when you are creating sketches, if you need to create or reference points
+        the z value is relative to the sketch plane and not absolute value.
+    adsk.core.Point3D.create(
+            x,
+            y,    
+            0  # Z-coordinate is 0 relative to the sketch plane
+        )
+
+
 Here is the build123d script.
-
-
 
