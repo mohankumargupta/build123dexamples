@@ -73,6 +73,11 @@ Before we start, I want you to adhere to instructions below:
         if not topFace:
             ui.messageBox("Top face not found!")
             return
+    9.  When you want to do a extrude cut, it should be done like this
+        note the sign       
+    
+        distance = adsk.core.ValueInput.createByReal(userparameter_value('hex_depth'))
+        extInput.setOneSideExtent(adsk.fusion.DistanceExtentDefinition.create(distance), adsk.fusion.ExtentDirections.NegativeExtentDirection)
 
 Here is the build123d script.
 
