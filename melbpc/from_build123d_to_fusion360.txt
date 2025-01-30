@@ -6,6 +6,7 @@ Before we start, I want you to adhere to instructions below:
            design = adsk.fusion.Design.cast(product)
 - also i want to declare user parameters.
 - use parameters to define sketch dimensions. want to see those dimensions as fx: on the sketches which indicates they are driven by parameters.
+- dont create new component, use the existing one rootComp = design.rootComponent
 
    2.  Use this function - declare it inside the run function after declaration of design variable above since it requires it. 
         # Get parameter values
