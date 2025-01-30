@@ -59,25 +59,20 @@ Before we start, I want you to adhere to instructions below:
 
  8. Here is how you might find the top face  
 
-# Reusable function to find the top face of a body
-def top_face(body: adsk.fusion.BRepBody) -> adsk.fusion.BRepFace:
-    """
-    Finds and returns the top face of a given body.
-    The top face is defined as the face with a normal pointing in the +Z direction.
-
-    Args:
-        body (adsk.fusion.BRepBody): The body to search for the top face.
-
-    Returns:
-        adsk.fusion.BRepFace: The top face of the body, or None if not found.
-    """
+def get_topmost_face(body: adsk.fusion.BRepBody):
+    if not body:
+        return None
+    
+    top_face = None
+    max_z = float('-inf')
+    
     for face in body.faces:
-        if face.geometry.surfaceType == adsk.core.SurfaceTypes.PlaneSurfaceType:
-            normal = face.geometry.normal
-            if normal.z == 1:  # Top face has a normal pointing in the +Z direction
-                return face
-    return None
-
+        centroid = face.centroid
+        if centroid.z > max_z:
+            max_z = centroid.z
+            top_face = face
+    
+    return top_face
 
 
 
@@ -99,4 +94,6 @@ def top_face(body: adsk.fusion.BRepBody) -> adsk.fusion.BRepFace:
 
 
 Here is the build123d script.
+
+
 
