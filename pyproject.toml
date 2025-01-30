@@ -7,7 +7,7 @@ name = "build123examples"
 version = "0.0.1"
 requires-python = ">=3.11"
 
-dependencies = ["build123d", "ocp-vscode", "notebook", "jupytext"]
+dependencies = ["cadquery-ocp<7.8","build123d", "ocp-vscode", "notebook", "jupytext"]
 
 [project.optional-dependencies]
 lint = ["ruff"]

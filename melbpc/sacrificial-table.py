@@ -27,7 +27,9 @@ half_width = width / 2
 # Main design
 with BuildPart() as part_builder:
     Box(length, width, height, align=(Align.MIN, Align.MIN, Align.MIN))
-    with BuildSketch(Plane.XY.offset(height)) as quadrant_bottom_lower:
+    
+    top_face = Plane.XY.offset(height)
+    with BuildSketch(top_face) as quadrant_bottom_lower:
         with Locations((length - x_offset, y2_offset)):
             RegularPolygon(radius=hex_inscribed_radius, side_count=6, major_radius=False, rotation=90)
     extrude(amount=-hex_depth, mode=Mode.SUBTRACT)            
