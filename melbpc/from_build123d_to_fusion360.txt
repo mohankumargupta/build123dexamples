@@ -7,7 +7,7 @@ Before we start, I want you to adhere to instructions below:
 - also i want to declare user parameters.
 - use parameters to define sketch dimensions. want to see those dimensions as fx: on the sketches which indicates they are driven by parameters.
 - dont create new component, use the existing one rootComp = design.rootComponent
-- create sketches on primary planes only. When doing a command like extrude, a start extent can be specified
+- create sketches on primary planes only. When doing a command like extrude that is not on the profile plane, a start extent can be specified
   by either offset distance 
 
   start_from = adsk.fusion.DistanceExtentDefinition(adsk.core.ValueInput.createByString("2mm"))
@@ -54,7 +54,7 @@ Before we start, I want you to adhere to instructions below:
         Returns a list of the sketch lines that were created to represent the polygon or null in the case of bad input.
         """
     
-    unfortunately polygons in fusion 360 are unconstrained. To constrain it, you need to draw a construction line from the center of the polygon vertically(make it approx twice the inscribed/circumscribed radius), then constrain a corner close to it to that construction line.
+    
     
     7. 
     
