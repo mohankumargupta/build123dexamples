@@ -1,22 +1,15 @@
-import adsk.core, adsk.fusion, traceback
+import adsk.core, adsk.fusion, adsk.cam, traceback
 
 # Parameters
-length = 1260  # mm
-width = 775  # mm
-height = 32  # mm
+length = 1260  # Length of the box
+width = 775    # Width of the box
+height = 32    # Height of the box
 
-x_offset = 30  # mm
-y_offset = 730  # mm
-y1_offset = 30  # mm
-y2_offset = 45  # mm
+x_offset = 30   # X offset for the hexagon
+y2_offset = 45  # Y offset for the hexagon
 
-spacing_small = 50  # mm
-spacing_large = 100  # mm
-
-hex_depth = 5.5  # mm
-
-# Radius and diameters
-hex_inscribed_radius = 5  # mm
+hex_depth = 5.5  # Depth of the hexagon cut
+hex_inscribed_radius = 5  # Inscribed radius of the hexagon
 
 # Computed parameters
 half_length = length / 2
@@ -26,35 +19,29 @@ def run(context):
     try:
         app = adsk.core.Application.get()
         ui = app.userInterface
-        design = adsk.fusion.Design.cast(app.activeProduct)
+        product = app.activeProduct
+        design = adsk.fusion.Design.cast(product)
         rootComp = design.rootComponent
 
-        # Get the user parameters
-        params = design.userParameters
+        # Get parameter values
+        def userparameter_value(name):
+            return design.unitsManager.evaluateExpression(params.itemByName(name).expression, 'mm')
 
-        # Add user parameters
+        # Define user parameters
+        params = design.userParameters
         params.add('length', adsk.core.ValueInput.createByString(f"{length}mm"), 'mm', '')
         params.add('width', adsk.core.ValueInput.createByString(f"{width}mm"), 'mm', '')
         params.add('height', adsk.core.ValueInput.createByString(f"{height}mm"), 'mm', '')
         params.add('x_offset', adsk.core.ValueInput.createByString(f"{x_offset}mm"), 'mm', '')
-        params.add('y_offset', adsk.core.ValueInput.createByString(f"{y_offset}mm"), 'mm', '')
-        params.add('y1_offset', adsk.core.ValueInput.createByString(f"{y1_offset}mm"), 'mm', '')
         params.add('y2_offset', adsk.core.ValueInput.createByString(f"{y2_offset}mm"), 'mm', '')
-        params.add('spacing_small', adsk.core.ValueInput.createByString(f"{spacing_small}mm"), 'mm', '')
-        params.add('spacing_large', adsk.core.ValueInput.createByString(f"{spacing_large}mm"), 'mm', '')
         params.add('hex_depth', adsk.core.ValueInput.createByString(f"{hex_depth}mm"), 'mm', '')
         params.add('hex_inscribed_radius', adsk.core.ValueInput.createByString(f"{hex_inscribed_radius}mm"), 'mm', '')
-
-        # Function to get parameter values
-        def userparameter_value(name):
-            return design.unitsManager.evaluateExpression(params.itemByName(name).expression, 'mm')
 
         # Create the base box
         sketches = rootComp.sketches
         xyPlane = rootComp.xYConstructionPlane
         sketch = sketches.add(xyPlane)
-        sketchLines = sketch.sketchCurves.sketchLines
-        sketchLines.addTwoPointRectangle(
+        rectangle = sketch.sketchCurves.sketchLines.addTwoPointRectangle(
             adsk.core.Point3D.create(0, 0, 0),
             adsk.core.Point3D.create(userparameter_value('length'), userparameter_value('width'), 0)
         )
@@ -63,45 +50,43 @@ def run(context):
         extInput = extrudes.createInput(prof, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
         distance = adsk.core.ValueInput.createByReal(userparameter_value('height'))
         extInput.setOneSideExtent(adsk.fusion.DistanceExtentDefinition.create(distance), adsk.fusion.ExtentDirections.PositiveExtentDirection)
-        baseExtrude = extrudes.add(extInput)  # Store the extrusion feature
+        
+        extrudes.add(extInput)
 
-        # Get the top face of the base body
-        baseBody = baseExtrude.bodies.item(0)
-        topFace = None
-        for face in baseBody.faces:
-            if face.geometry.surfaceType == adsk.core.SurfaceTypes.PlaneSurfaceType:
-                normal = face.geometry.normal
-                if normal.z == 1:  # Top face has a normal pointing in the +Z direction
-                    topFace = face
-                    break
-
-        if not topFace:
-            ui.messageBox('Top face not found!')
-            return
-
-        # Create the hexagonal cut on the top face
-        sketch = sketches.add(topFace)
+        # Create sketch     
+        sketches = rootComp.sketches   
+        sketch = sketches.add(rootComp.xYConstructionPlane)
+        #centerPoint = adsk.core.Point3D.create(10, 10, 0)
         centerPoint = adsk.core.Point3D.create(
             userparameter_value('length') - userparameter_value('x_offset'),
             userparameter_value('y2_offset'),
             0  # Z-coordinate is 0 relative to the sketch plane
-        )
-        sketch.sketchCurves.sketchLines.addScribedPolygon(
+        )        
+        lines = sketch.sketchCurves.sketchLines.addScribedPolygon(
             centerPoint,
             6,
             90,
             userparameter_value('hex_inscribed_radius'),
-            True
+            False
         )
+        
+        constraints = sketch.geometricConstraints
+        constraints.addVertical(lines.item(3))
+        #sketchCircles = sketch.sketchCurves.sketchCircles
+        
+        #circle = sketchCircles.addByCenterRadius(centerPoint, 2)
+
+        # Get the profile defined by the circle
         prof = sketch.profiles.item(0)
-        extrudes = rootComp.features.extrudeFeatures
-        extInput = extrudes.createInput(prof, adsk.fusion.FeatureOperations.CutFeatureOperation)
-        distance = adsk.core.ValueInput.createByReal(userparameter_value('hex_depth'))
-        extInput.setOneSideExtent(adsk.fusion.DistanceExtentDefinition.create(distance), adsk.fusion.ExtentDirections.NegativeExtentDirection)
-        extrudes.add(extInput)
+        extrudeInput = extrudes.createInput(prof, adsk.fusion.FeatureOperations.CutFeatureOperation)
+        extent = adsk.fusion.DistanceExtentDefinition.create(adsk.core.ValueInput.createByString("5.5mm"))
+        start_offset = adsk.fusion.OffsetStartDefinition.create(adsk.core.ValueInput.createByString("32mm"))
+        extrudeInput.startExtent = start_offset
+        extrudeInput.setOneSideExtent(extent,adsk.fusion.ExtentDirections.NegativeExtentDirection)
+        extrudes.add(extrudeInput)
+            
 
     except:
         if ui:
             ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
-            
