@@ -19,13 +19,21 @@ All 2d,3d objects in build123d have an align property that is by default set to 
 - all parameters, radius, diameter and computed parameters need to be added to User Parameters in fusion 360
 - retain declaration of parameters, radius, diameter and computed parameters (declared them before the run function)
 - use parameters to define sketch dimensions instead of raw values. want to see those dimensions as fx: on the sketches which indicates they are driven by parameters.
-- Use this function - declare it inside the run function after declaration of design variable above since it requires it. 
-        # Get parameter values
-        def userparameter_value(name):
-            return design.unitsManager.evaluateExpression(params.itemByName(name).expression, 'mm')
-- Instead of params.add(name, value, units, '') use
-            params.add(name, adsk.core.ValueInput.createByString( f”{value}{units}”), units, '')
-- For calculated parameters eg. radius = diameter/2 use params.add(name, adsk.core.ValueInput.createByString(“diameter/2”) , units, '')
+- For fixed value parameters, use
+        def addFixedValueUserParameter(
+                param_name: str,
+                value: float
+                ):
+             params = design.userParameters
+             params.add(param_name, adsk.core.ValueInput.createByString(f'{value}mm'), "mm",'')
+- for computed parameters including computed radius and diameters use
+        def addExpressionUserParameter(
+                        param_name: str,
+                        expression: str
+                        ):
+             params = design.userParameters
+             params.add(param_name, adsk.core.ValueInput.createByString(f'{expression}mm'), "mm", '')
+
 
 **Design rules in fusion 360**
 - create sketches on primary planes only. When doing a command like extrude that is not on the profile plane, a start extent can be specified
@@ -45,13 +53,13 @@ All 2d,3d objects in build123d have an align property that is by default set to 
 def createHole(
     plane1: adsk.fusion.BRepFace,
     point: adsk.core.Point3D, 
-    diameter: float,
+    diameter: adsk.core.ValueInput,
     depth: float) -> adsk.fusion.HoleFeature:
 
     comp: adsk.fusion.Component = plane1.body.parentComponent
     holeFeatures: adsk.fusion.HoleFeatures = comp.features.holeFeatures
     holeInput: adsk.fusion.HoleFeatureInput = holeFeatures.createSimpleInput(
-        adsk.core.ValueInput.createByString(f'{diameter}')
+        diameter
     )
     holeInput.setPositionByPoint(
         plane1,
