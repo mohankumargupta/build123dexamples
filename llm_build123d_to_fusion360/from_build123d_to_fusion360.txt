@@ -44,20 +44,18 @@ All 2d,3d objects in build123d have an align property that is by default set to 
 - do not create circular holes with sketches. Instead use the following function:
 def createHole(
     plane1: adsk.fusion.BRepFace,
-    x: float,
-    y: float,
-    z: float,
+    point: adsk.core.Point3D, 
     diameter: float,
     depth: float) -> adsk.fusion.HoleFeature:
 
     comp: adsk.fusion.Component = plane1.body.parentComponent
     holeFeatures: adsk.fusion.HoleFeatures = comp.features.holeFeatures
     holeInput: adsk.fusion.HoleFeatureInput = holeFeatures.createSimpleInput(
-        adsk.core.ValueInput.createByString(f'{diameter} mm')
+        adsk.core.ValueInput.createByString(f'{diameter}')
     )
     holeInput.setPositionByPoint(
         plane1,
-        adsk.core.Point3D.create(x, y, z)
+        point
     )
     distance = adsk.core.ValueInput.createByReal(depth)
     holeInput.setDistanceExtent(distance)
@@ -71,34 +69,6 @@ def createHole(
 
     return holeFeat
 
-def createThroughHole(
-    plane1: adsk.fusion.BRepFace,
-    x: float,
-    y: float,
-    z: float,
-    diameter: float,
-    direction: adsk.fusion.ExtentDirections = adsk.fusion.ExtentDirections.NegativeExtentDirection
-    ) -> adsk.fusion.HoleFeature:
-
-    comp: adsk.fusion.Component = plane1.body.parentComponent
-    holeFeatures: adsk.fusion.HoleFeatures = comp.features.holeFeatures
-    holeInput: adsk.fusion.HoleFeatureInput = holeFeatures.createSimpleInput(
-        adsk.core.ValueInput.createByString(f'{diameter} mm')
-    )
-    holeInput.setPositionByPoint(
-        plane1,
-        adsk.core.Point3D.create(x, y, z)
-    )
-    hole_input.setAllExtent(direction)
-
-    holeFeat: adsk.fusion.HoleFeature = None
-    try:
-        holeFeat = holeFeatures.add(holeInput)
-    except:
-        holeInput.isDefaultDirection = not holeInput.isDefaultDirection # here
-        holeFeat = holeFeatures.add(holeInput)
-
-    return holeFeat
 
 
 - polygons in fusion 360 python api sketch.sketchCurves.sketchLines.addScribedPolygon()

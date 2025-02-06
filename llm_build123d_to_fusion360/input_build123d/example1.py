@@ -11,8 +11,7 @@ center_hole_diameter = 22.0
 center_hole_radius = center_hole_diameter / 2
 
 with BuildPart() as ex2:
-    Box(length, width, height)
+    Box(length, width, height, align=(Align.CENTER, Align.CENTER, Align.CENTER))
     Hole(radius=center_hole_radius)
-    
 show_all()
 
