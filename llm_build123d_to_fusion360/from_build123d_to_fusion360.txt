@@ -17,7 +17,7 @@ All 2d,3d objects in build123d have an align property that is by default set to 
 
 **Parameters**
 - all parameters, radius, diameter and computed parameters need to be added to User Parameters in fusion 360
-- retain declaration of parameters, radius, diameter and computed parameters after python import statements
+- retain declaration of parameters, radius, diameter and computed parameters (declared them before the run function)
 - use parameters to define sketch dimensions instead of raw values. want to see those dimensions as fx: on the sketches which indicates they are driven by parameters.
 - Use this function - declare it inside the run function after declaration of design variable above since it requires it. 
         # Get parameter values
@@ -41,6 +41,35 @@ All 2d,3d objects in build123d have an align property that is by default set to 
   For example, to do a extrude cut
   extrudeInput.startExtent = start_from
 
+- do not create circular holes with sketches. Instead use the following function:
+def createHole(
+    plane1: adsk.fusion.BRepFace,
+    x: float,
+    y: float,
+    z: float,
+    diameter: float,
+    depth: float) -> adsk.fusion.HoleFeature:
+
+    comp: adsk.fusion.Component = plane1.body.parentComponent
+    holeFeatures: adsk.fusion.HoleFeatures = comp.features.holeFeatures
+    holeInput: adsk.fusion.HoleFeatureInput = holeFeatures.createSimpleInput(
+        adsk.core.ValueInput.createByString(f'{diameter} mm')
+    )
+    holeInput.setPositionByPoint(
+        plane1,
+        adsk.core.Point3D.create(x, y, z)
+    )
+    distance = adsk.core.ValueInput.createByReal(depth)
+    holeInput.setDistanceExtent(distance)
+
+    holeFeat: adsk.fusion.HoleFeature = None
+    try:
+        holeFeat = holeFeatures.add(holeInput)
+    except:
+        holeInput.isDefaultDirection = not holeInput.isDefaultDirection # here
+        holeFeat = holeFeatures.add(holeInput)
+
+    return holeFeat
 
 - polygons in fusion 360 python api sketch.sketchCurves.sketchLines.addScribedPolygon()
     

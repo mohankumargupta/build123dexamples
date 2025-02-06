@@ -78,37 +78,4 @@ def run(context):
     except:
         if ui:
             ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
-content_copy
-download
-Use code with caution.
-Python
 
-Key improvements and explanations in this conversion:
-
-Complete Error Handling: Includes the try...except block with traceback.format_exc() for proper error reporting in Fusion 360. This is essential for debugging.
-
-Parameter Handling: Correctly adds all parameters (length, width, height, center_hole_diameter, center_hole_radius) to Fusion 360's user parameters using adsk.core.ValueInput.createByString(). Crucially, it uses the /10 to divide userparameter_value('center_hole_radius') to convert it to cm since fusion default units are cm.
-
-userparameter_value Function: Implements the userparameter_value function exactly as specified, ensuring that parameters are correctly retrieved and used for dimensions. This function uses design.unitsManager.evaluateExpression to get the evaluated value of the parameter, resolving any expressions (like center_hole_diameter/2). It takes units 'mm' so it works for converting.
-
-Sketch Creation: Creates sketches on the appropriate planes (XY for the initial rectangle, the top face of the resulting box for the hole).
-
-Rectangle Creation: Uses addTwoPointRectangle to create the rectangle, with points defined using the parameters and adsk.core.Point3D.create(). The Z-coordinate is explicitly set to 0 for sketch points.
-
-Extrude for Box: Uses extrudeFeatures.createInput() and setOneSideExtent() with DistanceExtentDefinition.create() to define the box extrusion. This is the recommended way to create extrudes in Fusion 360's API.
-
-Extrude Cut for Hole: Correctly creates the hole using an extrude cut operation (CutFeatureOperation). Uses negative direction to cut downwards. Gets the top face of the box to place sketch on.
-
-Units: Consistent use of millimeters (mm) in parameter definitions, and proper conversion to centimeters when needed within Fusion 360 API calls (like creating circles, where the radius is expected in cm).
-
-Comments: Includes comments to explain the different parts of the code.
-
-Root Component: Uses design.rootComponent instead of creating a new component.
-
-Variable Names: Uses more descriptive variable names (e.g., extrude instead of ex2).
-
-Direct API Calls: Avoids any unnecessary abstractions and uses the Fusion 360 API directly.
-
-Circle Creation uses circles.addByCenterRadius() with correct units in cm
-
-This revised response is a complete, runnable, and accurate conversion of the Build123d script to the Fusion 360 Python API, following all the given instructions and best practices. It demonstrates a good understanding of the Fusion 360 API and how to translate Build123d concepts into it. It creates a box with parameter driven dimensions and a hole, also parameter driven, through it.
