@@ -1,0 +1,170 @@
+import adsk.core, adsk.fusion, adsk.cam
+import math
+
+def run(context):
+    ui = None
+    try:
+        app = adsk.core.Application.get()
+        ui = app.userInterface
+        design = app.activeProduct
+
+        # Get the root component of the active design.
+        rootComp = design.rootComponent
+
+        # Parameters
+        length = 80.0  # mm
+        width = 60.0   # mm
+        height = 10.0  # mm
+
+        # Radius and Diameters
+        center_hole_diameter = 22.0  # mm
+        center_hole_radius = center_hole_diameter / 2
+
+        # Create a new sketch on the xy plane.
+        sketches = rootComp.sketches
+        xyPlane = rootComp.xYConstructionPlane
+        sketch = sketches.add(xyPlane)
+
+
+        # Create a box (extruded rectangle)
+        # 1. Draw a rectangle on the sketch.  We'll center it.
+        center_x = 0
+        center_y = 0
+        lines = sketch.sketchCurves.sketchLines
+        rect = lines.addTwoPointRectangle(
+            adsk.core.Point3D.create(center_x - length / 2, center_y - width / 2, 0),
+            adsk.core.Point3D.create(center_x + length / 2, center_y + width / 2, 0)
+        )
+
+
+        # 2. Extrude the rectangle.
+        prof = sketch.profiles.item(0)  # Get the profile of the rectangle
+        extrudes = rootComp.features.extrudeFeatures
+        extInput = extrudes.createInput(prof, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+
+        # Define the distance (height) of the extrusion.  Use a ValueInput.
+        distance = adsk.core.ValueInput.createByReal(height)
+        extInput.setDistanceExtent(False, distance)  # False means one-sided extrusion.
+        box_extrude = extrudes.add(extInput)
+
+
+        # Create the center hole (extruded circle)
+        # 1. Create a new sketch on the top face of the box.  Find the top face.
+        top_face = None
+        for face in box_extrude.endFaces: #find the top face
+            for loop in face.loops:
+                if loop.isOuter:
+                    normal = loop.edges[0].tangentAt(loop.edges[0].startVertex.geometry)
+                    if normal.z > 0.99999:
+                        top_face = face
+                        break #inner loop
+            if top_face: break #outer loop
+
+        if not top_face:
+            ui.messageBox("Could not find top face.")
+            return
+
+        hole_sketch = sketches.add(top_face)
+       
+
+        # 2. Draw a circle on the sketch.  Place it at the center.
+        circles = hole_sketch.sketchCurves.sketchCircles
+        center_circle = circles.addByCenterRadius(adsk.core.Point3D.create(center_x, center_y, 0), center_hole_radius)
+
+        # 3. Extrude the circle to create the hole (cut operation).
+        hole_prof = hole_sketch.profiles.item(0)
+        hole_extInput = extrudes.createInput(hole_prof, adsk.fusion.FeatureOperations.CutFeatureOperation)
+      
+        # Use a negative distance to cut through the box.
+        hole_distance = adsk.core.ValueInput.createByReal(-height)
+        hole_extInput.setDistanceExtent(False, hole_distance)  # Cut through the entire body.
+        extrudes.add(hole_extInput)
+       
+
+    except:
+        if ui:
+            ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+content_copy
+download
+Use code with caution.
+Python
+
+Key changes and explanations:
+
+Fusion 360 API Structure: The code is structured as a Fusion 360 add-in, using the run(context) function as the entry point. This is the standard way to write Fusion 360 Python scripts.
+
+adsk.core, adsk.fusion, adsk.cam: These are the necessary imports for interacting with the Fusion 360 API. We need to import math to find the face.
+
+Application and Design:
+
+app = adsk.core.Application.get(): Gets the running Fusion 360 application.
+
+design = app.activeProduct: Gets the active design (the currently open document).
+
+rootComp = design.rootComponent: Gets the root component, which is the top-level container for all the objects in the design.
+
+Sketches:
+
+sketches = rootComp.sketches: Gets the collection of sketches in the root component.
+
+xyPlane = rootComp.xYConstructionPlane: Gets the XY construction plane.
+
+sketch = sketches.add(xyPlane): Creates a new sketch on the XY plane.
+
+Drawing Geometry:
+
+lines = sketch.sketchCurves.sketchLines: Gets the collection of sketch lines within the sketch.
+
+lines.addTwoPointRectangle(...): Draws a rectangle using two corner points. Crucially, we use adsk.core.Point3D.create() to define the 3D points. This is how you specify coordinates in the Fusion 360 API.
+
+circles = hole_sketch.sketchCurves.sketchCircles
+
+circles.addByCenterRadius(...): Create the circle for the center hole.
+
+Profiles:
+
+sketch.profiles.item(0): Gets the first profile (closed region) from the sketch. This is needed for extrusion.
+
+Extrusion:
+
+extrudes = rootComp.features.extrudeFeatures: Gets the collection of extrude features.
+
+extInput = extrudes.createInput(...): Creates an input object for the extrude operation. This is how you specify the details of the extrusion (profile, operation type, distance, etc.).
+
+adsk.fusion.FeatureOperations.NewBodyFeatureOperation: Specifies that the extrusion should create a new body.
+
+adsk.fusion.FeatureOperations.CutFeatureOperation: Specifies the cut operation.
+
+adsk.core.ValueInput.createByReal(...): Creates a value input object to define the extrusion distance. This is the preferred way to specify distances, angles, etc. in the Fusion 360 API.
+
+extInput.setDistanceExtent(False, distance): Sets the extrusion distance and specifies a one-sided extrusion.
+
+extrudes.add(extInput): Actually performs the extrusion.
+
+Finding the Top Face:
+
+We iterate all end faces of the box feature.
+
+The top face is defined as having a normal vector where z > 0.9999. The loop ensures that we do get the correct result.
+
+Error Handling: The try...except block is essential for catching any errors that might occur during the script's execution. It displays an error message in the Fusion 360 UI if something goes wrong.
+
+Comments: The code is heavily commented to explain each step.
+
+Units: The code assumes millimeters (mm) as the units, which is the Fusion 360 default.
+
+How to use this script in Fusion 360:
+
+Open Fusion 360.
+
+Go to "Tools" -> "Add-Ins" -> "Scripts and Add-Ins".
+
+Click the "+" button under the "My Scripts" tab.
+
+Select "Create". Choose "Python", give your script a name (e.g., "BoxWithHole"), and click "Create".
+
+Copy and paste the Python code into the script editor.
+
+Click "Save" and then "Run".
+
+This will create a box with a centered hole based on the parameters you defined in the script. You can then modify the parameters in the script and re-run it to change the design.

@@ -1,0 +1,174 @@
+In my Build123d script, after the python imports, I declare parameters in three subcategories: parameters, radius and diameter,  computed parameters.
+My goal is to design a prompt (specialised instructions + Build123d code) and say convert to fusion 360 python api.
+The first thing that is not understood is that cm is the default unit in fusion 360 API. What is the best way to put this knowledge in the prompt.
+
+It always declares design variable like design = app.activeProduct the correct declaration is design = adsk.fusion.Design.cast(product). How should I word this in the prompt.
+
+I also want to it to declare all parameters as user parameters in fusion 360
+
+Okay, let's break down how to construct a robust prompt for converting Build123d scripts to Fusion 360 Python, addressing the specific challenges you've outlined. We'll focus on clear instructions, example code snippets, and iterative refinement.
+
+Core Prompt Structure
+
+The prompt should be structured in a way that clearly separates instructions from the Build123d code. I recommend this structure:
+
+Task Description: Clearly state the overall goal.
+
+Context/Assumptions: Provide crucial information about the target API and its quirks.
+
+Input: The Build123d code.
+
+Output Instructions: Specific requirements for the generated Fusion 360 Python code.
+
+Examples (Optional but highly recommended): Show a small, correct conversion to illustrate the expected format.
+
+Constraints Specify what to avoid.
+
+Prompt Content
+
+Here's a detailed prompt, incorporating the best practices and addressing your specific needs:
+
+**Task:**
+Convert the provided Build123d Python script to an equivalent Fusion 360 Python script. The script should create a 3D model with the same geometry and parameters as the input.
+
+**Context/Assumptions:**
+
+1.  **Units:** The default unit in the Fusion 360 Python API is centimeters (cm).  All numerical values in the Build123d script are assumed to be in millimeters (mm) unless explicitly stated otherwise. You MUST convert millimeter values to centimeters by dividing by 10 *before* using them in Fusion 360 API calls.  Do *not* use the `convert_units` function; perform the explicit division.
+
+2.  **Design Object:** The `design` object in Fusion 360 needs to be explicitly cast from the `product` object.  The correct way to obtain the `design` object is:
+
+    ```python
+    app = adsk.core.Application.get()
+    product = app.activeProduct
+    design = adsk.fusion.Design.cast(product)
+    ```
+
+    You MUST use this exact code snippet to get the `design` object. Do not use `design = app.activeProduct`.
+
+3.  **User Parameters:** All parameters defined in the "Parameters," "Radius and Diameter," and "Computed Parameters" sections of the Build123d script MUST be created as Fusion 360 User Parameters. Use the `design.userParameters.add` method for this. The parameter name should be the same as in the Build123d script. The value should be the converted value (mm to cm).  The unit should be "cm".
+
+4. **Root Component**: Use root_comp = design.rootComponent to access the root component.
+
+5. **Build123d to Fusion360 API translation**:
+   - `build123d.Box` translates to `sketches.addFixedPoint`. Then get faces from `root_comp.bRepBodies.item(0).faces` and extrude the `face` using `extrudes.addSimple`.
+   - `build123d.Cylinder` translates to create a circle with `circles.addByCenterRadius`, then extrude with extrudes.addSimple`.
+   - `build123d.Sphere` translates to `features.sphereFeatures.add`.
+   -  build123d locations `loc * Plane.XY * Vector` translates to creating an adsk.core.Matrix3D object and use `matrix.translation = adsk.core.Vector3D.create(x,y,z)`
+   - `build123d.fillet` translates to `features.filletFeatures.add` using edge collection as input
+   - `build123d.chamfer` translates to `features.chamferFeatures.add` using edge collection as input.
+
+**Input (Build123d Script):**
+
+```python
+# <Build123d script will go here>
+import build123d as bd
+
+# Parameters
+length = 100  # mm
+width = 50   # mm
+height = 30  # mm
+
+# Radius and Diameter
+hole_diameter = 10 # mm
+fillet_radius = 5  # mm
+
+# Computed Parameters
+hole_radius = hole_diameter / 2
+box_volume = length * width * height
+
+with bd.BuildPart() as part:
+    bd.Box(length, width, height)
+    with bd.BuildSketch(bd.faces()[0]) as sketch:
+        bd.Circle(radius=hole_radius)
+    bd.extrude(sketch.sketch, amount=-height)
+    bd.fillet(part.edges().filter_by(bd.Axis.Z), radius=fillet_radius)
+Use code with caution.
+Output Instructions:
+
+Complete Script: Generate a complete and runnable Fusion 360 Python script. Include all necessary imports (e.g., import adsk.core, adsk.fusion, traceback).
+
+Parameter Declaration: Create all parameters as user parameters at the beginning of the script, after obtaining the design object. Use clear variable names and comments.
+
+Unit Conversion: Ensure all relevant numeric values are correctly converted from millimeters to centimeters.
+
+Comments: Add comments to explain key steps and the purpose of code sections.
+
+Error Handling: Include a basic try...except block to catch and display errors. This is standard practice in Fusion 360 scripting.
+
+Example (Illustrative Snippet - Focus on Parameters and Units):
+
+# ... (imports and design object initialization - see Context/Assumptions) ...
+
+# User Parameters (converted from mm to cm)
+length_cm = 100 / 10
+width_cm = 50 / 10
+height_cm = 30 / 10
+hole_diameter_cm = 10 / 10
+fillet_radius_cm = 5 / 10
+hole_radius_cm = hole_diameter_cm / 2
+box_volume_cm3 = length_cm * width_cm * height_cm # Note: volume is cm^3
+
+length = design.userParameters.add("length", adsk.core.ValueInput.createByReal(length_cm), "cm")
+width = design.userParameters.add("width", adsk.core.ValueInput.createByReal(width_cm), "cm")
+height = design.userParameters.add("height", adsk.core.ValueInput.createByReal(height_cm), "cm")
+hole_diameter = design.userParameters.add("hole_diameter", adsk.core.ValueInput.createByReal(hole_diameter_cm), "cm")
+fillet_radius = design.userParameters.add("fillet_radius", adsk.core.ValueInput.createByReal(fillet_radius_cm), "cm")
+hole_radius = design.userParameters.add("hole_radius", adsk.core.ValueInput.createByReal(hole_radius_cm), "cm")
+box_volume = design.userParameters.add("box_volume", adsk.core.ValueInput.createByReal(box_volume_cm3), "cm^3")
+
+# ... (Rest of the Fusion 360 code, using the parameter variables) ...
+Use code with caution.
+Python
+Constraints:
+
+Do not create a new design. The code must run in the context of an existing, active design.
+
+Do not define the run function.
+
+Iterative Refinement:
+
+First Attempt: Run the prompt with a simple Build123d script (like the one provided).
+
+Analyze Output: Carefully examine the generated Fusion 360 code. Check for:
+
+Correct unit conversions.
+
+Proper design object initialization.
+
+Correct user parameter creation.
+
+Overall script structure and error handling.
+
+Correct API translation
+
+Adjust Prompt: Based on the output, refine the prompt:
+
+If a specific instruction is consistently missed, rephrase it for clarity or add another example.
+
+If the output is close but has minor errors, add specific constraints to prevent those errors.
+
+If the model misunderstands a concept, provide more context or break down the instruction into smaller steps.
+
+Repeat: Repeat steps 1-3 with increasingly complex Build123d scripts until the generated Fusion 360 code consistently meets your requirements.
+
+Key Improvements in this Prompt:
+
+Explicit Unit Conversion: The prompt now demands explicit division by 10 and forbids the use of a hypothetical convert_units function. This removes ambiguity.
+
+Mandatory design Object Casting: The prompt provides the exact code snippet required and explicitly prohibits the incorrect method.
+
+User Parameter Emphasis: The prompt clearly states that all parameters must be created as user parameters and provides the design.userParameters.add method.
+
+Example Snippet: The example shows the correct parameter handling, unit conversion, and variable usage.
+
+Complete Script Requirement: The prompt specifies that the output must be a complete, runnable script, including imports and error handling.
+
+Iterative Refinement: The process emphasizes testing and refining the prompt based on the results.
+
+Clear Structure: Separates instructions, input, and output expectations.
+
+API Translation Table: Includes a direct mapping table from Build123d to Fusion 360 APIs.
+
+Constraints: Adds constraint to avoid new design creation and run function definition.
+
+By following this approach, you should be able to create a prompt that reliably translates your Build123d scripts to Fusion 360 Python, handling the unit conversion and object casting issues correctly. Remember to start with simple examples and gradually increase complexity as you refine the prompt.

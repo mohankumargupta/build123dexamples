@@ -1,2 +1,92 @@
 Convert build123d script to Fusion360 python api.
 
+Adhere to the following:
+
+** Notes on build123d **
+All 2d,3d objects in build123d have an align property that is by default set to (Align.CENTER, Align.CENTER, Align.CENTER)
+
+**Python imports**
+- dont forget to import traceback
+
+**Default units in fusion 360**
+- fusion360 default units are cm
+
+**Declaration of design and rootComp variable**
+- declare design = adsk.fusion.Design.cast(product)
+- dont create new component, use the existing one rootComp = design.rootComponent
+
+**Parameters**
+- all parameters, radius, diameter and computed parameters need to be added to User Parameters in fusion 360
+- retain declaration of parameters, radius, diameter and computed parameters after python import statements
+- use parameters to define sketch dimensions instead of raw values. want to see those dimensions as fx: on the sketches which indicates they are driven by parameters.
+- Use this function - declare it inside the run function after declaration of design variable above since it requires it. 
+        # Get parameter values
+        def userparameter_value(name):
+            return design.unitsManager.evaluateExpression(params.itemByName(name).expression, 'mm')
+- Instead of params.add(name, value, units, '') use
+            params.add(name, adsk.core.ValueInput.createByString( f”{value}{units}”), units, '')
+- For calculated parameters eg. radius = diameter/2 use params.add(name, adsk.core.ValueInput.createByString(“diameter/2”) , units, '')
+
+**Design rules in fusion 360**
+- create sketches on primary planes only. When doing a command like extrude that is not on the profile plane, a start extent can be specified
+  by either offset distance 
+
+  start_from = adsk.fusion.DistanceExtentDefinition(adsk.core.ValueInput.createByString("2mm"))
+  
+  or from an object
+
+  mm10 = adsk.core.ValueInput.createByString("10 mm")
+  start_from = adsk.fusion.FromEntityStartDefinition.create(body1.faces.item(0), mm10)
+
+  For example, to do a extrude cut
+  extrudeInput.startExtent = start_from
+
+
+- polygons in fusion 360 python api sketch.sketchCurves.sketchLines.addScribedPolygon()
+    
+    
+    def addScribedPolygon(self, centerPoint: core.Base, edgeCount: int, angle: float, radius: float, isInscribed: bool) -> SketchLineList:
+        """
+        Creates either an inscribed or circumscribed n-sided polygon.
+        centerPoint : Either an existing SketchPoint or a Point3D object that defines the center point of the polygon. If a SketchPoint object
+        is provided the point will continue to control the center of the polygon.
+        edgeCount : The number of edges in the resulting polygon.
+        angle : Controls the rotation of the polygon around the center point. For a circumscribed polygon, this defines where the center
+        of one of the edges will be positioned. For an inscribed polygon, this defines where one of the corners of the polygon
+        will be positioned.
+        radius : The radius of the circle in centimeters that the polygon goes to, either outside (circumscribed) or inside (inscribed) the circle.
+        isInscribed : Specifies if a circumscribed or inscribed polygon should be created.
+        Returns a list of the sketch lines that were created to represent the polygon or null in the case of bad input.
+        """
+    
+    
+    
+  -  The ExtrudeFeatureInput type has method signatures as follows:
+       1. def setOneSideExtent(self, extent: ExtentDefinition, direction: ExtentDirections, taperAngle: core.ValueInput = None) -> bool:
+       2. def setTwoSidesExtent(self, sideOneExtent: ExtentDefinition, sideTwoExtent: ExtentDefinition, sideOneTaperAngle: core.ValueInput = None, sideTwoTaperAngle: core.ValueInput = None) -> bool:
+       3. def setSymmetricExtent(self, distance: core.ValueInput, isFullLength: bool, taperAngle: core.ValueInput = None) -> bool:
+    
+    example usage:
+    distance = adsk.core.ValueInput.createByReal(userparameter_value('height'))
+   extInput.setOneSideExtent(adsk.fusion.DistanceExtentDefinition.create(distance),adsk.fusion.ExtentDirections.PositiveExtentDirection)
+
+    note the use of adsk.fusion.DistanceExtentDefinition.create static method
+
+ 
+   -  When you want to do a extrude cut, it should be done like this
+        note the sign       
+    
+        distance = adsk.core.ValueInput.createByReal(userparameter_value('hex_depth'))
+        extInput.setOneSideExtent(adsk.fusion.DistanceExtentDefinition.create(distance), adsk.fusion.ExtentDirections.NegativeExtentDirection)
+
+    - In build123d, when you are creating sketches, if you need to create or reference points
+        the z value is relative to the sketch plane and not absolute value.
+    adsk.core.Point3D.create(
+            x,
+            y,    
+            0  # Z-coordinate is 0 relative to the sketch plane
+        )
+
+
+Here is the build123d script.
+
