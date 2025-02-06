@@ -1,0 +1,93 @@
+Converting a build123d script to Fusion 360 API Python involves understanding the geometry and operations defined in the build123d script and then translating those into equivalent operations using Fusion 360's API.
+
+build123d is a Python library for creating 3D CAD models, while Fusion 360 uses its own API (Application Programming Interface) that allows you to programmatically create and manipulate 3D models. Both systems are capable of performing similar tasks, but their syntax and methods differ significantly.
+
+General Steps:
+Understand the build123d Script : Break down the script into individual operations such as creating sketches, extruding, adding fillets, etc.
+Map Operations to Fusion 360 API : Identify how each operation in build123d maps to an equivalent operation in Fusion 360.
+Write the Fusion 360 API Script : Use the Fusion 360 API to recreate the same geometry and operations.
+Example Conversion
+Let’s assume we have a simple build123d script that creates a box with a hole in it:
+
+
+from build123d import *
+
+with BuildPart() as part:
+    Box(10, 10, 10)
+    Cylinder(radius=2, height=10)
+    part.cut(part.faces().sort_by(Axis.Z)[-1])
+
+# Export the result
+exporter = Mesher()
+exporter.add_shape(part.part)
+exporter.write("box_with_hole.stl")
+This script creates a 10x10x10 box, adds a cylinder through it, and cuts the cylinder out of the box.
+
+Equivalent Fusion 360 API Script
+Below is the equivalent script in Fusion 360 API Python:
+
+import adsk.core, adsk.fusion, traceback
+
+def run(context):
+    ui = None
+    try:
+        # Get the application and user interface objects
+        app = adsk.core.Application.get()
+        ui = app.userInterface
+        
+        # Create a new document
+        doc = app.documents.add(adsk.core.DocumentTypes.FusionDesignDocumentType)
+        design = app.activeProduct
+
+        # Get the root component of the active design
+        rootComp = design.rootComponent
+
+        # Create a new sketch on the XY plane
+        sketches = rootComp.sketches
+        xyPlane = rootComp.xYConstructionPlane
+        sketch = sketches.add(xyPlane)
+
+        # Draw a rectangle for the box
+        lines = sketch.sketchCurves.sketchLines
+        rect = lines.addTwoPointRectangle(adsk.core.Point3D.create(-5, -5, 0), adsk.core.Point3D.create(5, 5, 0))
+
+        # Extrude the rectangle to create the box
+        extrudes = rootComp.features.extrudeFeatures
+        prof = sketch.profiles.item(0)
+        distance = adsk.core.ValueInput.createByReal(10)
+        extrudeInput = extrudes.createInput(prof, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+        extrudeInput.setDistanceExtent(False, distance)
+        box = extrudes.add(extrudeInput)
+
+        # Create a sketch for the cylinder on the top face of the box
+        topFace = box.endFaces.item(0)
+        sketchCyl = sketches.add(topFace)
+
+        # Draw a circle for the cylinder
+        circles = sketchCyl.sketchCurves.sketchCircles
+        center = adsk.core.Point3D.create(0, 0, 0)
+        circle = circles.addByCenterRadius(center, 2)
+
+        # Extrude the circle to create the cylinder
+        profCyl = sketchCyl.profiles.item(0)
+        extrudeInputCyl = extrudes.createInput(profCyl, adsk.fusion.FeatureOperations.CutFeatureOperation)
+        extrudeInputCyl.setDistanceExtent(False, distance)
+        extrudes.add(extrudeInputCyl)
+
+    except:
+        if ui:
+            ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+Explanation of the Fusion 360 Script:
+Create a New Document : The script starts by creating a new Fusion 360 document.
+Create a Sketch : A sketch is created on the XY plane, and a rectangle is drawn to represent the base of the box.
+Extrude the Rectangle : The rectangle is extruded to create a 10x10x10 box.
+Create a Cylinder Sketch : A new sketch is created on the top face of the box, and a circle is drawn to represent the base of the cylinder.
+Cut the Cylinder : The circle is extruded as a cut operation to remove material from the box, creating the hole.
+Key Differences Between build123d and Fusion 360 API:
+Sketching : In build123d, you can directly create 3D primitives like boxes and cylinders. In Fusion 360, you typically start by creating a 2D sketch and then extrude or revolve it to create 3D geometry.
+Boolean Operations : In build123d, boolean operations like cut are straightforward. In Fusion 360, you need to use specific feature operations like CutFeatureOperation.
+Coordinate System : build123d uses a more flexible coordinate system, while Fusion 360 has predefined construction planes (XY, YZ, XZ).
+Conclusion
+The above example demonstrates how to convert a simple build123d script into a Fusion 360 API script. For more complex geometries, you would follow the same process: break down the build123d operations and map them to Fusion 360's API functions.
+
+If you have a specific build123d script you'd like to convert, feel free to share it, and I can help you translate it into Fusion 360 API code!

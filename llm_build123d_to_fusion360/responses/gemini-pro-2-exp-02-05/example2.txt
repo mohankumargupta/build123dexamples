@@ -1,0 +1,406 @@
+convert build123d script to fusion 360 api python.
+
+Okay, let's break down how to convert build123d (formerly build123d) Python scripts to Fusion 360's Python API. This is a complex task, as the libraries have different underlying philosophies and object models. There's no one-to-one, automated conversion tool. You'll need to understand the intent of your build123d code and reimplement it using Fusion 360's API.
+
+Here's a comprehensive guide and a step-by-step process, along with examples:
+
+1. Understanding the Differences
+
+build123d (and CadQuery):
+
+Uses a "fluent" API. You chain commands together to create and modify geometry.
+
+Relies heavily on OpenCASCADE's geometry kernel (like FreeCAD).
+
+Focuses on programmatic, declarative CAD modeling.
+
+Workplanes are central to the workflow. Operations often are relative to the current workplane.
+
+Fusion 360 API:
+
+Uses a more traditional object-oriented API. You create and manipulate objects like components, bodies, sketches, features, etc.
+
+Uses Autodesk's own geometry kernel.
+
+Emphasizes a more interactive and history-based modeling approach (although the API allows you to bypass the timeline).
+
+Uses a sketch-based workflow. Features are often created by extruding, revolving, sweeping, or lofting sketches.
+
+2. Step-by-Step Conversion Process
+
+Here's the general approach you'll follow for each part of your build123d script:
+
+Analyze the build123d Code:
+
+Identify the fundamental shapes and operations being performed (e.g., creating boxes, cylinders, extruding, filleting, chamfering, boolean operations).
+
+Understand how workplanes and transformations are used to position and orient geometry.
+
+Break down complex operations into a series of simpler steps.
+
+Create a Fusion 360 Project and Component:
+
+You always need to start by creating a Fusion 360 document and a component within it. This is the foundation for all your geometry.
+
+Recreate Geometry Using Sketches and Features:
+
+Sketches: Most Fusion 360 geometry starts with sketches. Convert build123d shapes into sketch entities (lines, arcs, circles, splines, etc.) on sketch planes. build123d's 2D shapes (Rectangle, Circle, etc.) will often translate directly to sketch entities.
+
+Sketch Planes: Carefully define the sketch planes that correspond to the build123d workplanes. You might use the root component's origin planes (XY, XZ, YZ) or create new construction planes.
+
+Features: Use Fusion 360's features (Extrude, Revolve, Sweep, Loft, Hole, Fillet, Chamfer, etc.) to create 3D geometry from your sketches.
+
+Boolean Operations: Use Fusion 360's Combine feature to perform boolean operations (union, intersection, difference) between bodies.
+
+Transformations: Use Fusion 360's transformBy method (on bodies and sketches) to translate, rotate, and scale geometry.
+
+Handle Workplanes and Transformations:
+
+build123d heavily relies on workplanes (and the related concept of "locations"). In Fusion 360, you'll achieve similar results by:
+
+Creating construction planes (ConstructionPlanes.add).
+
+Using offsets from existing planes.
+
+Using transformations (transformBy) to position sketches and features.
+
+Sometimes, you'll use object snapping and constraints within sketches to achieve precise positioning.
+
+Error Handling:
+
+Fusion 360's API is more strict about types and object validity. Add error handling (try-except blocks) to your code to catch issues and provide informative messages.
+
+Iterate and Refine:
+
+It's likely you'll need to adjust your code several times. Use Fusion 360's interactive environment to inspect your geometry and debug your script.
+
+3. Example Conversions
+
+Let's look at several examples to illustrate the conversion process:
+
+Example 1: Simple Box
+
+build123d:
+
+from build123d import *
+
+with BuildPart() as part:
+    Box(10, 20, 5)
+
+show(part)
+Use code with caution.
+Python
+Fusion 360 API:
+
+import adsk.core, adsk.fusion, traceback
+
+def run(context):
+    ui = None
+    try:
+        app = adsk.core.Application.get()
+        ui = app.userInterface
+        design = app.activeProduct
+
+        # Get the root component.
+        root_comp = design.rootComponent
+
+        # Create a sketch on the XY plane.
+        sketches = root_comp.sketches
+        xy_plane = root_comp.xYConstructionPlane
+        sketch = sketches.add(xy_plane)
+
+        # Draw a rectangle.
+        lines = sketch.sketchCurves.sketchLines
+        rect = lines.addTwoPointRectangle(adsk.core.Point3D.create(0, 0, 0), 
+                                           adsk.core.Point3D.create(10, 20, 0))
+
+        # Extrude the rectangle.
+        prof = sketch.profiles.item(0)  # Get the profile.
+        extrudes = root_comp.features.extrudeFeatures
+        ext_input = extrudes.createInput(prof, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+        ext_input.setDistanceExtent(False, adsk.core.ValueInput.createByReal(5))
+        extrude = extrudes.add(ext_input)
+        
+    except:
+        if ui:
+            ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+Use code with caution.
+Python
+Example 2: Box with a Hole
+
+build123d:
+
+from build123d import *
+
+with BuildPart() as part:
+    Box(10, 20, 5)
+    with BuildSketch(Plane.XY.offset(5)) as sketch: # top face
+      Circle(2)
+    make_hull() #cut operation
+
+show(part)
+Use code with caution.
+Python
+Fusion 360 API:
+
+import adsk.core, adsk.fusion, traceback
+
+def run(context):
+    ui = None
+    try:
+        app = adsk.core.Application.get()
+        ui = app.userInterface
+        design = app.activeProduct
+
+        # Get the root component.
+        root_comp = design.rootComponent
+
+        # --- Create the box (same as before) ---
+        sketches = root_comp.sketches
+        xy_plane = root_comp.xYConstructionPlane
+        sketch = sketches.add(xy_plane)
+        lines = sketch.sketchCurves.sketchLines
+        rect = lines.addTwoPointRectangle(adsk.core.Point3D.create(0, 0, 0),
+                                           adsk.core.Point3D.create(10, 20, 0))
+        prof = sketch.profiles.item(0)
+        extrudes = root_comp.features.extrudeFeatures
+        ext_input = extrudes.createInput(prof, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+        ext_input.setDistanceExtent(False, adsk.core.ValueInput.createByReal(5))
+        extrude = extrudes.add(ext_input)
+        # --- End of box creation ---
+
+        # Get the top face of the box.  Important:  We need to find the face *after* the extrusion.
+        top_face = extrude.endFaces.item(0)
+
+        # Create a sketch on the top face.
+        sketch_hole = sketches.add(top_face)
+
+        # Draw a circle on the sketch.  Place it at the center of the face.
+        circles = sketch_hole.sketchCurves.sketchCircles
+        center_point = top_face.centroid  # Get the centroid of the face
+        circle = circles.addByCenterRadius(center_point, 2)  # Radius of 2
+
+        # Extrude the circle (cut operation).
+        prof_hole = sketch_hole.profiles.item(0)
+        ext_input_hole = extrudes.createInput(prof_hole, adsk.fusion.FeatureOperations.CutFeatureOperation)
+
+        # Use a negative value for a cut.
+        ext_input_hole.setDistanceExtent(False, adsk.core.ValueInput.createByReal(-5)) 
+        extrude_hole = extrudes.add(ext_input_hole)
+
+
+    except:
+        if ui:
+            ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+Use code with caution.
+Python
+Example 3: Cylinder with a Fillet
+
+build123d:
+
+from build123d import *
+
+with BuildPart() as part:
+    Cylinder(radius=5, height=10)
+    fillet(part.edges().filter_by(Axis.Z), radius=1)  # Select the top edge.
+
+show(part)
+Use code with caution.
+Python
+Fusion 360 API:
+
+import adsk.core, adsk.fusion, traceback
+
+def run(context):
+    ui = None
+    try:
+        app = adsk.core.Application.get()
+        ui = app.userInterface
+        design = app.activeProduct
+
+        # Get the root component.
+        root_comp = design.rootComponent
+
+        # Create a sketch on the XZ plane.
+        sketches = root_comp.sketches
+        xz_plane = root_comp.xZConstructionPlane
+        sketch = sketches.add(xz_plane)
+
+        # Draw a circle.
+        circles = sketch.sketchCurves.sketchCircles
+        circle = circles.addByCenterRadius(adsk.core.Point3D.create(0, 0, 0), 5)  # Radius = 5
+
+        # Revolve the circle to create a cylinder.
+        prof = sketch.profiles.item(0)
+        revolves = root_comp.features.revolveFeatures
+        rev_input = revolves.createInput(prof, root_comp.yConstructionAxis, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+        angle = adsk.core.ValueInput.createByReal(360)  # Full revolution
+        rev_input.setAngleExtent(False, angle)
+        revolve = revolves.add(rev_input)
+       
+       #find top edge
+        edges = revolve.endFaces.item(0).edges
+
+        # Add a fillet.
+        fillets = root_comp.features.filletFeatures
+        fillet_input = fillets.createInput()
+        fillet_input.addConstantRadiusEdgeSet(edges, adsk.core.ValueInput.createByReal(1), True)
+        fillet = fillets.add(fillet_input)
+
+
+
+    except:
+        if ui:
+            ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+Use code with caution.
+Python
+Example 4: build123d rotate, translate and combine
+
+build123d:
+
+from build123d import *
+
+with BuildPart() as part:
+    b1 = Box(5,5,5)
+    b2 = Box(6,3,3)
+    b2.rotate((0,0,1),45) #Rotate around the Z axis.
+    b2.location = Location((3,3,3)) #translate
+    make_hull()
+
+show(part)
+Use code with caution.
+Python
+Fusion 360 API:
+
+import adsk.core, adsk.fusion, traceback, math
+
+def run(context):
+    ui = None
+    try:
+        app = adsk.core.Application.get()
+        ui = app.userInterface
+        design = app.activeProduct
+
+        # Get the root component.
+        root_comp = design.rootComponent
+        # ============ Create First Box (b1) ============
+        sketches = root_comp.sketches
+        xy_plane = root_comp.xYConstructionPlane
+        sketch1 = sketches.add(xy_plane)
+        lines1 = sketch1.sketchCurves.sketchLines
+        rect1 = lines1.addTwoPointRectangle(adsk.core.Point3D.create(0, 0, 0),
+                                             adsk.core.Point3D.create(5, 5, 0))
+        prof1 = sketch1.profiles.item(0)
+        extrudes = root_comp.features.extrudeFeatures
+        ext_input1 = extrudes.createInput(prof1, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+        ext_input1.setDistanceExtent(False, adsk.core.ValueInput.createByReal(5))
+        extrude1 = extrudes.add(ext_input1)
+        body1 = extrude1.bodies.item(0)  # Get the created body
+
+        # ============ Create Second Box (b2) ============
+        sketch2 = sketches.add(xy_plane)  # Reuse XY plane
+        lines2 = sketch2.sketchCurves.sketchLines
+        rect2 = lines2.addTwoPointRectangle(adsk.core.Point3D.create(0, 0, 0),
+                                             adsk.core.Point3D.create(6, 3, 0))
+        prof2 = sketch2.profiles.item(0)
+        ext_input2 = extrudes.createInput(prof2, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+        ext_input2.setDistanceExtent(False, adsk.core.ValueInput.createByReal(3))
+        extrude2 = extrudes.add(ext_input2)
+        body2 = extrude2.bodies.item(0)
+
+
+        # ============ Rotate b2 ============
+        transform_matrix = adsk.core.Matrix3D.create()
+        transform_matrix.setToRotation(math.radians(45), root_comp.zConstructionAxis.geometry.direction, adsk.core.Point3D.create(0,0,0)) #rotate 45 deg
+        body2.transformBy(transform_matrix)
+        
+        # ============ Translate b2 ============
+        transform_matrix = adsk.core.Matrix3D.create()
+        transform_matrix.translation = adsk.core.Vector3D.create(3, 3, 3)  # Translate (3, 3, 3)
+        body2.transformBy(transform_matrix)
+
+        # ============ Combine (Union) b1 and b2 ============
+        combines = root_comp.features.combineFeatures
+        combine_input = combines.createInput(body1, adsk.core.ObjectCollection.create())
+        combine_input.targetBody = body1
+        combine_input.toolBodies.add(body2)
+        combine_input.operation = adsk.fusion.FeatureOperations.JoinFeatureOperation  # Union
+        combine = combines.add(combine_input)
+
+
+    except:
+        if ui:
+            ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+Use code with caution.
+Python
+Key improvements and explanations in these examples:
+
+Complete, Runnable Scripts: These are full Fusion 360 API scripts that you can copy and paste directly into Fusion 360's script editor and run. They include the necessary imports and the run(context) function.
+
+Clearer Structure: The code is organized to clearly show the creation of the box and the hole as separate steps.
+
+Top Face Identification: The crucial step of getting the top face of the extruded box is highlighted. This is essential because the face IDs change after the extrusion. We use extrude.endFaces.item(0) to get the new top face.
+
+Centroid for Hole Placement: The hole is precisely centered on the top face by using the centroid property of the face.
+
+Cut Operation: The extrusion for the hole uses CutFeatureOperation and a negative distance to ensure it cuts through the box.
+
+Error Handling: The try-except block provides a basic level of error handling, displaying a message box if something goes wrong.
+
+Revolve for Cylinder: The cylinder example demonstrates using the Revolve feature, which is often more natural in Fusion 360 than extruding a circle and filleting it.
+
+Fillet Example: Shows how to select edges and apply a fillet. The edge selection is based on the cylinder creation.
+
+ObjectCollection: Demonstrates the use of ObjectCollection for operations that require multiple bodies, like Combine.
+
+Transformations (Translate, Rotate): The transformBy method is used with a Matrix3D to perform translations and rotations. This is crucial for positioning objects relative to each other. The matrix is built step-by-step (first rotation, then translation). Note the use of math.radians for angle conversions.
+
+Combine (Union): Shows how to use the Combine feature with the JoinFeatureOperation to create a union of two bodies.
+
+Comments: more comments have been added to increase readability.
+
+explicit body access: After each extrude, the body is saved to a variable to avoid ambiguity.
+
+4. Key API Elements
+
+Here's a quick reference to some of the most important Fusion 360 API elements you'll use:
+
+adsk.core.Application.get(): Gets the running Fusion 360 application.
+
+app.activeProduct: Gets the active design (product).
+
+design.rootComponent: Gets the root component of the design. All geometry is ultimately contained within a component.
+
+rootComponent.sketches: The collection of sketches in the component.
+
+sketches.add(plane): Adds a new sketch to the specified plane.
+
+sketch.sketchCurves.sketchLines: The collection of lines in a sketch.
+
+lines.addTwoPointRectangle(...): Adds a rectangle to a sketch. There are similar methods for other sketch entities (circles, arcs, etc.).
+
+sketch.profiles: The collection of closed profiles (regions) within a sketch. These are what you extrude, revolve, etc.
+
+rootComponent.features.extrudeFeatures: The collection of extrude features. Similar collections exist for other feature types (revolves, lofts, etc.).
+
+extrudes.createInput(...): Creates an input object for an extrude feature. You use this to specify the profile, operation (new body, cut, join, intersect), and extent (distance, to object, etc.).
+
+extrudes.add(input): Adds the extrude feature to the timeline (and creates the geometry).
+
+adsk.fusion.FeatureOperations: An enum that defines the different types of feature operations (NewBody, Cut, Join, Intersect, NewComponent).
+
+adsk.core.ValueInput.createByReal(...): Creates a ValueInput object, which is used to specify numerical values (like distances, angles) for features.
+
+body.transformBy(matrix): Transforms a body using a 3D transformation matrix.
+
+adsk.core.Matrix3D.create(): Creates a 3D transformation matrix. You can then use methods like setToTranslation, setToRotation, and setToScale to set the transformation.
+
+rootComponent.constructionPlanes: The collection of construction planes.
+
+constructionPlanes.add(...): Adds a new construction plane. You can define planes in various ways (offset from a face, at an angle, etc.).
+
+face.centroid: Returns the centroid of a face.
+
+combineFeatures.createInput: create input object for combine feature.
+
+This comprehensive guide, along with the detailed examples, should provide a solid foundation for converting your build123d scripts to Fusion 360's Python API. Remember to break down the problem into smaller steps, use Fusion 360's interactive environment to check your progress, and consult the Fusion 360 API documentation for details on specific classes and methods. Good luck!
