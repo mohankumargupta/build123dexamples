@@ -62,7 +62,7 @@ def run(context):
         rootComp = design.rootComponent
 
         def get_user_parameter(parameter: str) -> adsk.core.ValueInput:
-            expression = design.userParameters.itemByName("center_hole_diameter").expression
+            expression = design.userParameters.itemByName(parameter).expression
             return    adsk.core.ValueInput.createByString(expression)
 
 

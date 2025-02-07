@@ -39,13 +39,17 @@ def createValueInput(parameter: float):
                 ):
              params = design.userParameters
              params.add(param_name, adsk.core.ValueInput.createByString(f'{value}mm'), "mm",'')
-- for computed parameters including computed radius and diameters use((declare function inside run function after design variable is declared))
+- for computed parameters including computed radius and diameters use(declare function inside run function after design variable is declared)
         def addExpressionUserParameter(
                         param_name: str,
                         expression: str
                         ):
              params = design.userParameters
              params.add(param_name, adsk.core.ValueInput.createByString(f'{expression}mm'), "mm", '')
+- to retrieve parameter and convert to ValueInput, use (declare function inside run function after design variable is declared)
+        def get_user_parameter(parameter: str) -> adsk.core.ValueInput:
+            expression = design.userParameters.itemByName(parameter).expression
+            return    adsk.core.ValueInput.createByString(expression)
 
 
 **Design rules in fusion 360**
