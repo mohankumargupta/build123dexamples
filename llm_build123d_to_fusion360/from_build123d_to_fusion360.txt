@@ -17,7 +17,7 @@ All 2d,3d objects in build123d have an align property that is by default set to 
 - dont create new component, use the existing one rootComp = design.rootComponent
 
 **Passing adsk.core.Point3D to functions**
-   Use this:
+   Use this(don't use user parameters for points, use raw values only):
         def createPoint(point: Tuple[float, float, float]) -> adsk.core.Point3D:
             x,y,z = point
             return adsk.core.Point3D.create(x * 0.1, y * 0.1, z * 0.1)
