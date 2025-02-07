@@ -32,14 +32,14 @@ def createValueInput(parameter: float):
 - all parameters, radius, diameter and computed parameters need to be added to User Parameters in fusion 360
 - retain declaration of parameters, radius, diameter and computed parameters (declared them before the run function)
 - use parameters to define sketch dimensions instead of raw values. want to see those dimensions as fx: on the sketches which indicates they are driven by parameters.
-- For fixed value parameters, use
+- For fixed value parameters, use (declare function inside run function after design variable is declared)
         def addFixedValueUserParameter(
                 param_name: str,
                 value: float
                 ):
              params = design.userParameters
              params.add(param_name, adsk.core.ValueInput.createByString(f'{value}mm'), "mm",'')
-- for computed parameters including computed radius and diameters use
+- for computed parameters including computed radius and diameters use((declare function inside run function after design variable is declared))
         def addExpressionUserParameter(
                         param_name: str,
                         expression: str
