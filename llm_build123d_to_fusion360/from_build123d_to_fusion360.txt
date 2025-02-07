@@ -23,7 +23,7 @@ All 2d,3d objects in build123d have an align property that is by default set to 
             return adsk.core.Point3D.create(x * 0.1, y * 0.1, z * 0.1)
 
 **Create adsk.core.ValueInput**
-  use this when you need to pass a ValueInput to a function:
+  use this when you need to pass a parameter as a ValueInput to a function:
   
 def createValueInput(parameter: float):
     return adsk.core.ValueInput.createByString(f"{parameter}mm")
