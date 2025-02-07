@@ -6,7 +6,8 @@ Adhere to the following:
 All 2d,3d objects in build123d have an align property that is by default set to (Align.CENTER, Align.CENTER, Align.CENTER)
 
 **Python imports**
-- dont forget to import traceback
+- dont forget to add: import traceback
+- dont forget to add: from typing import Tuple
 
 **Default units in fusion 360**
 - fusion360 default units are cm
@@ -14,6 +15,12 @@ All 2d,3d objects in build123d have an align property that is by default set to 
 **Declaration of design and rootComp variable**
 - declare design = adsk.fusion.Design.cast(product)
 - dont create new component, use the existing one rootComp = design.rootComponent
+
+** Passing adsk.core.Point3D to functions**
+   Use this:
+        def createPoint(point: Tuple[float, float, float]) -> adsk.core.Point3D:
+            x,y,z = point
+            return adsk.core.Point3D.create(x * 0.1, y * 0.1, z * 0.1)
 
 **Parameters**
 - all parameters, radius, diameter and computed parameters need to be added to User Parameters in fusion 360
