@@ -90,7 +90,10 @@ def createHole(
 
     return holeFeat
 
-
+- to get the end face of a single-profile extrude, you would use: 
+        ext = extrudes.add(extInput)
+        # Get the top face of the box
+        topFace = ext.endFaces.item(0)
 
 - polygons in fusion 360 python api sketch.sketchCurves.sketchLines.addScribedPolygon()
     
