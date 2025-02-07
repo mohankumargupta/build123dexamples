@@ -1,0 +1,3 @@
+1. Add sketch dimensions to all sketches.
+2. Add constraints such as horizontal and vertical constraints.
+3. Add coincident constraints so that sketches are fully constrainted.
