@@ -7,7 +7,9 @@ All 2d,3d objects in build123d have an align property that is by default set to 
 
 ** notes on fusion 360 api python
 - do not add sketchdimesions
-
+- use symmetry when possible. If things are centered in build123d, make them centered in fusion 360. 
+  If centered rectangle is required, use the centered rectangle rather than the two point rectangle.
+  
 **Python imports**
 - dont forget to add: import traceback
 - dont forget to add: from typing import Tuple
@@ -118,6 +120,7 @@ def createHole(
        1. def setOneSideExtent(self, extent: ExtentDefinition, direction: ExtentDirections, taperAngle: core.ValueInput = None) -> bool:
        2. def setTwoSidesExtent(self, sideOneExtent: ExtentDefinition, sideTwoExtent: ExtentDefinition, sideOneTaperAngle: core.ValueInput = None, sideTwoTaperAngle: core.ValueInput = None) -> bool:
        3. def setSymmetricExtent(self, distance: core.ValueInput, isFullLength: bool, taperAngle: core.ValueInput = None) -> bool:
+          make sure that if using setSymmetricExtent, isFullLength=True
     
     example usage:
     distance = adsk.core.ValueInput.createByReal(userparameter_value('height'))
