@@ -5,6 +5,9 @@ Adhere to the following:
 ** Notes on build123d **
 All 2d,3d objects in build123d have an align property that is by default set to (Align.CENTER, Align.CENTER, Align.CENTER)
 
+** notes on fusion 360 api python
+- do not add sketchdimesions
+
 **Python imports**
 - dont forget to add: import traceback
 - dont forget to add: from typing import Tuple
@@ -17,7 +20,7 @@ All 2d,3d objects in build123d have an align property that is by default set to 
 - dont create new component, use the existing one rootComp = design.rootComponent
 
 **Passing adsk.core.Point3D to functions**
-   Use this(don't use user parameters for points, use raw values only):
+   Use this:
         def createPoint(point: Tuple[float, float, float]) -> adsk.core.Point3D:
             x,y,z = point
             return adsk.core.Point3D.create(x * 0.1, y * 0.1, z * 0.1)
@@ -50,7 +53,6 @@ def createValueInput(parameter: float):
         def get_user_parameter(parameter: str) -> adsk.core.ValueInput:
             expression = design.userParameters.itemByName(parameter).expression
             return    adsk.core.ValueInput.createByString(expression)
-
 
 **Design rules in fusion 360**
 - create sketches on primary planes only. When doing a command like extrude that is not on the profile plane, a start extent can be specified
