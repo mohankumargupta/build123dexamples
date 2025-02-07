@@ -16,11 +16,17 @@ All 2d,3d objects in build123d have an align property that is by default set to 
 - declare design = adsk.fusion.Design.cast(product)
 - dont create new component, use the existing one rootComp = design.rootComponent
 
-** Passing adsk.core.Point3D to functions**
+**Passing adsk.core.Point3D to functions**
    Use this:
         def createPoint(point: Tuple[float, float, float]) -> adsk.core.Point3D:
             x,y,z = point
             return adsk.core.Point3D.create(x * 0.1, y * 0.1, z * 0.1)
+
+**Create adsk.core.ValueInput**
+  use this when you need to pass a ValueInput to a function:
+  
+def createValueInput(parameter: float):
+    return adsk.core.ValueInput.createByString(f"{parameter}mm")
 
 **Parameters**
 - all parameters, radius, diameter and computed parameters need to be added to User Parameters in fusion 360
