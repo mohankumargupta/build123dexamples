@@ -69,27 +69,21 @@ def createValueInput(parameter: float):
 - do not create circular holes with sketches. Instead use the following function:
 def createHole(
     plane1: adsk.fusion.BRepFace,
-    point: adsk.core.Point3D, 
+    point: adsk.core.Point3D,
     diameter: adsk.core.ValueInput,
-    depth: float) -> adsk.fusion.HoleFeature:
-
+    depth: adsk.core.ValueInput,
+) -> adsk.fusion.HoleFeature:
     comp: adsk.fusion.Component = plane1.body.parentComponent
     holeFeatures: adsk.fusion.HoleFeatures = comp.features.holeFeatures
-    holeInput: adsk.fusion.HoleFeatureInput = holeFeatures.createSimpleInput(
-        diameter
-    )
-    holeInput.setPositionByPoint(
-        plane1,
-        point
-    )
-    distance = adsk.core.ValueInput.createByReal(depth)
-    holeInput.setDistanceExtent(distance)
+    holeInput: adsk.fusion.HoleFeatureInput = holeFeatures.createSimpleInput(diameter)
+    holeInput.setPositionByPoint(plane1, point)
+    holeInput.setDistanceExtent(depth)
 
     holeFeat: adsk.fusion.HoleFeature = None
     try:
         holeFeat = holeFeatures.add(holeInput)
     except:
-        holeInput.isDefaultDirection = not holeInput.isDefaultDirection # here
+        holeInput.isDefaultDirection = not holeInput.isDefaultDirection  # here
         holeFeat = holeFeatures.add(holeInput)
 
     return holeFeat
