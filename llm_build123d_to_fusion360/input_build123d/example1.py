@@ -2,8 +2,8 @@ from build123d import *
 from ocp_vscode import show_all
 
 # Parameters
-length = 80.0, 
-width = 60.0, 
+length = 80.0
+width = 60.0
 height = 10.0
 
 # Radius and Diameters
