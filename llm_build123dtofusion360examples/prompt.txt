@@ -2,6 +2,7 @@ Convert build123d script to Fusion360 python api.
 
 Let me describe the structure of this prompt.
 - ground rules
+- some fusion360 api documentation
 - examples of conversion from build123d to fusion 360
 - a build123d script to convert
 
@@ -14,7 +15,15 @@ First, some ground rules. Adhere to the following:
 - Apply conversion ONLY through _build123d_value_to_fusion360_value
 - Use converted values exclusively for Fusion operations
 
-Second, examples for converting:
+Second, some fusion360 api documentation.
+** Extrude**
+- setSymmetricExtent(distance, isFullLength)
+- setOneSideExtent(extent, direction)
+- setTwoSidesExtent(sideOneExtent, sideTwoExtent)
+- to extrude through all, use 
+        extent_all = adsk.fusion.ThroughAllExtentDefinition.create()
+        extrudeInput.setOneSideExtent(extent_all, adsk.fusion.ExtentDirections.PositiveExtentDirection)
+Third, examples for converting:
 
 example1_build123d.py:
 from build123d import *
@@ -92,7 +101,7 @@ def run(context):
 example1_fusion360.py:
 
 
-Third, convert the following build123d script to fusion 360:
+Fourth, convert the following build123d script to fusion 360:
 
 from build123d import *
 from ocp_vscode import show_all
