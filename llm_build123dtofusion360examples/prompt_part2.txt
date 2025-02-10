@@ -2,9 +2,9 @@ Second, some fusion360 api documentation.
 
 ** Extrude**
 - setSymmetricExtent(distance, isFullLength)
-- setOneSideExtent(extent, direction)
-  eg. extrudeInput.setOneSideExtent(_build123d_value_to_fusion360_value(distance), adsk.fusion.ExtentDirections.PositiveExtentDirection)
-- setTwoSidesExtent(sideOneExtent, sideTwoExtent)
+- def setOneSideExtent(self, extent: ExtentDefinition, direction: ExtentDirections, taperAngle: core.ValueInput = None) -> bool:
+  eg. extrudeInput.setOneSideExtent(adsk.fusion.ExtentDirections.PositiveExtentDirection, _build123d_value_to_fusion360_value(distance))
+- def setTwoSidesExtent(self, sideOneExtent: ExtentDefinition, sideTwoExtent: ExtentDefinition, sideOneTaperAngle: core.ValueInput = None, sideTwoTaperAngle: core.ValueInput = None) -> bool:  
 - to extrude through all, use 
         extent_all = adsk.fusion.ThroughAllExtentDefinition.create()
         extrudeInput.setOneSideExtent(extent_all, adsk.fusion.ExtentDirections.PositiveExtentDirection)
