@@ -1,0 +1,8 @@
+First, some ground rules. Adhere to the following:
+
+**Unit Preservation Strategy**
+
+- Keep original parameters unchanged in millimeters
+- Apply conversion ONLY through _build123d_value_to_fusion360_value
+- Use converted values exclusively for Fusion operations
+

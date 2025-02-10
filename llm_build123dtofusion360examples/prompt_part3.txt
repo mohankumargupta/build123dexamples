@@ -1,30 +1,3 @@
-Convert build123d script to Fusion360 python api.
-
-Let me describe the structure of this prompt.
-- ground rules
-- some fusion360 api documentation
-- examples of conversion from build123d to fusion 360
-- a build123d script to convert
-
-First, some ground rules. Adhere to the following:
-
-
-**Unit Preservation Strategy**
-
-- Keep original parameters unchanged in millimeters
-- Apply conversion ONLY through _build123d_value_to_fusion360_value
-- Use converted values exclusively for Fusion operations
-
-Second, some fusion360 api documentation.
-** Extrude**
-- setSymmetricExtent(distance, isFullLength)
-- setOneSideExtent(extent, direction)
-  eg. extrudeInput.setOneSideExtent(_build123d_value_to_fusion360_value(distance), adsk.fusion.ExtentDirections.PositiveExtentDirection)
-- setTwoSidesExtent(sideOneExtent, sideTwoExtent)
-- to extrude through all, use 
-        extent_all = adsk.fusion.ThroughAllExtentDefinition.create()
-        extrudeInput.setOneSideExtent(extent_all, adsk.fusion.ExtentDirections.PositiveExtentDirection)
-
 Third, examples for converting:
 
 example1_build123d.py:
@@ -48,6 +21,7 @@ part = example1.part
 show_all()
 
 example1_fusion360.py:
+
 import adsk.core
 import adsk.fusion
 import traceback
@@ -98,23 +72,5 @@ def run(context):
     except:
         if ui:
             ui.messageBox("Failed:\n{}".format(traceback.format_exc()))
-
-
-
-Fourth, convert the following build123d script to fusion 360:
-
-from build123d import *
-from ocp_vscode import show_all
-
-# Parameters
-length = 80 * MM
-width = 60 * MM
-height = 10 * MM
-
-with BuildPart() as example1:
-    Box(length, width, height, align=(Align.CENTER, Align.CENTER, Align.MIN))
-
-part = example1.part
-show_all()
 
 

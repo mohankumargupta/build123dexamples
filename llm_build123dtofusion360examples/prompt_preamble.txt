@@ -2,23 +2,7 @@ Convert build123d script to Fusion360 python api.
 
 Let me describe the structure of this prompt.
 - ground rules
+- some fusion360 api documentation
 - examples of conversion from build123d to fusion 360
 - a build123d script to convert
-
-First, some ground rules. Adhere to the following:
-
-
-**Unit Preservation Strategy**
-
-- Keep original parameters unchanged in millimeters
-- Apply conversion ONLY through _build123d_value_to_fusion360_value
-- Use converted values exclusively for Fusion operations
-
-Second, examples for converting:
-
-<examples>
-
-Third, convert the following build123d script to fusion 360:
-
-<build123dscript>
 

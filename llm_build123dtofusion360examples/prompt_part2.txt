@@ -1,0 +1,10 @@
+Second, some fusion360 api documentation.
+
+** Extrude**
+- setSymmetricExtent(distance, isFullLength)
+- setOneSideExtent(extent, direction)
+  eg. extrudeInput.setOneSideExtent(_build123d_value_to_fusion360_value(distance), adsk.fusion.ExtentDirections.PositiveExtentDirection)
+- setTwoSidesExtent(sideOneExtent, sideTwoExtent)
+- to extrude through all, use 
+        extent_all = adsk.fusion.ThroughAllExtentDefinition.create()
+        extrudeInput.setOneSideExtent(extent_all, adsk.fusion.ExtentDirections.PositiveExtentDirection)
