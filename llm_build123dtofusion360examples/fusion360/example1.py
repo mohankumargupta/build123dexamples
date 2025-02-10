@@ -7,39 +7,9 @@ from typing import Tuple
 length = 80.0
 width = 60.0
 height = 10.0
-
-# Radius and diameters
-center_hole_diameter = 22.0
-center_hole_radius = center_hole_diameter / 2
  
-def _build123d_value_to_fusion360_value(build123d_parameter_name: float)->float:
+def _build123d_value_to_fusion360_value(build123d_parameter_name: float) -> float:
     return build123d_parameter_name * 0.1 # convert mm to cm
-
-def createPoint(point: Tuple[float, float, float]) -> adsk.core.Point3D:
-    x, y, z = point
-    return adsk.core.Point3D.create(x * 0.1, y * 0.1, z * 0.1)
-
-def createHole(
-    plane1: adsk.fusion.BRepFace,
-    point: adsk.core.Point3D,
-    diameter: adsk.core.ValueInput,
-    depth: float,
-) -> adsk.fusion.HoleFeature:
-    comp: adsk.fusion.Component = plane1.body.parentComponent
-    holeFeatures: adsk.fusion.HoleFeatures = comp.features.holeFeatures
-    holeInput: adsk.fusion.HoleFeatureInput = holeFeatures.createSimpleInput(adsk.core.ValueInput.createByReal(diameter))
-    holeInput.setPositionByPoint(plane1, point)
-    holeInput.setDistanceExtent(depth)
-
-    holeFeat: adsk.fusion.HoleFeature = None
-    try:
-        holeFeat = holeFeatures.add(holeInput)
-    except:
-        holeInput.isDefaultDirection = not holeInput.isDefaultDirection  # here
-        holeFeat = holeFeatures.add(holeInput)
-
-    return holeFeat
-
 
 def run(context):
     ui = None
@@ -71,6 +41,7 @@ def run(context):
         prof = sketch.profiles.item(0)
         distance = _build123d_value_to_fusion360_value(height)
         extInput = rootComp.features.extrudeFeatures.createInput(prof, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+        # The second parameter is indicates if the distance represents the full height(True) or half the height(False)
         extInput.setSymmetricExtent(adsk.core.ValueInput.createByReal(distance), True)
         rootComp.features.extrudeFeatures.add(extInput)
 
