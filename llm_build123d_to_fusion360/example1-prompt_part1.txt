@@ -3,34 +3,34 @@ Convert build123d script to Fusion360 python api.
 Adhere to the following:
 
 ** Notes on build123d **
-All 2d,3d objects in build123d have an align property that is by default set to (Align.CENTER, Align.CENTER, Align.CENTER)
+All 2d,3d objects in build123d have a default align property set to (Align.CENTER, Align.CENTER, Align.CENTER)
 
-** notes on fusion 360 api python
+** notes on fusion 360 api python**
 - do not add sketchdimesions
 - use symmetry when possible. If things are centered in build123d, make them centered in fusion 360. 
   If centered rectangle is required, use the centered rectangle rather than the two point rectangle.
-  
-**Python imports**
-- dont forget to add: import traceback
-- dont forget to add: from typing import Tuple
 
-**Default units in fusion 360**
-- fusion360 default units are cm
+** things to add to the top of fusion 360 script**
+- python imports should include:
+   import traceback
+   from typing import Tuple
+- copy the parameters, radius an diameters and computed parameters verbatim from build123d script(including comments)
+- define the following functions before the run function:
 
-**Declaration of design and rootComp variable**
-- declare design = adsk.fusion.Design.cast(product)
-- dont create new component, use the existing one rootComp = design.rootComponent
+** Inside the run function**
+- declare design variables as: design = adsk.fusion.Design.cast(product)
+- dont create new component, use the existing one: rootComp = design.rootComponent
+- when passing parameters, radius and diameters to a function, then need to be converted using the following functions:
+     
+  # Passing a float parameter, radius or diameter to a function   
+  def _build123d_value_to_fusion360_value(build123d_parameter_name: float)->float:
+    return build123d_parameter_name * 0.1 # convert mm to cm
 
-**Parameters from build123d**
-Use parameters from build123d using the following function:
+  # Passing adsk.core.ValueInput to a function
+  def _convert_to_valueinput(build123d_parameter_name: float)->adsk.core.ValueInput:
+    return adsk.core.ValueInput.createByString(f"{build123d_parameter_name}mm") 
 
-def _build123d_value_to_fusion360_value(build123d_parameter_name: float):
-  return build123d_parameter_name * 0.1 # convert mm to cm
-
-def _convert_to_valueinput(build123d_parameter_name: float):
-  return adsk.core.ValueInput.createByString(f"{build123d_parameter_name}mm") 
-  
-Do not not use user parameters in the design, only define them.
+- do not not use user parameters in the design, only define them.
 
 **Passing adsk.core.Point3D to functions**
    Use this:
@@ -38,10 +38,8 @@ Do not not use user parameters in the design, only define them.
             x,y,z = point
             return adsk.core.Point3D.create(x * 0.1, y * 0.1, z * 0.1)
 
-**Parameters**
+**user Parameters in fusion360**
 - all parameters, radius, diameter and computed parameters need to be added to User Parameters in fusion 360
-- retain declaration of parameters, radius, diameter and computed parameters (declared them before the run function)
-- use parameters to define sketch dimensions instead of raw values. want to see those dimensions as fx: on the sketches which indicates they are driven by parameters.
 - For fixed value parameters, use (declare function inside run function after design variable is declared)
         def addFixedValueUserParameter(
                 param_name: str,
@@ -56,11 +54,6 @@ Do not not use user parameters in the design, only define them.
                         ):
              params = design.userParameters
              params.add(param_name, adsk.core.ValueInput.createByString(f'{expression}mm'), "mm", '')
-- to retrieve parameter and convert to ValueInput, use (declare function inside run function after design variable is declared)
-        def get_user_parameter(parameter: str) -> adsk.core.ValueInput:
-            expression = design.userParameters.itemByName(parameter).expression
-            return    adsk.core.ValueInput.createByString(expression)
-
 **Design rules in fusion 360**
 - create sketches on primary planes only. When doing a command like extrude that is not on the profile plane, a start extent can be specified
   by either offset distance 
@@ -155,8 +148,8 @@ from build123d import *
 from ocp_vscode import show_all
 
 # Parameters
-length = 80.0, 
-width = 60.0, 
+length = 80.0
+width = 60.0
 height = 10.0
 
 # Radius and Diameters
